@@ -10,31 +10,31 @@ export interface ServerToClientEvents {
 export interface ClientToServerEvents {
   register: (
     pseudo: string,
-    callback: (error: boolean | string, player?: Player) => void
+    callback: (error: false | string, player?: Player) => void
   ) => void;
   reconnect: (
     token: string,
-    callback: (error: boolean | string, player?: Player) => void
+    callback: (error: false | string, player?: Player) => void
   ) => void;
   /****** ADMIN ******/
   adminGetQuestions: (
-    callback: (error: boolean | string, questions?: Question[]) => void
+    callback: (error: false | string, questions?: Question[]) => void
   ) => void;
   adminStartQuestion: (
     questionIndex: number,
-    callback: (error: boolean | string) => void
+    callback: (error: false | string) => void
   ) => void;
   adminStopQuestion: (
     quesitonIndex: number,
-    callback: (error: boolean | string) => void
+    callback: (error: false | string) => void
   ) => void;
-  adminFinishGame: (callback: (error: boolean | string) => void) => void;
+  adminFinishGame: (callback: (error: false | string) => void) => void;
 
   /****** PLAYER ******/
   answerQuestion: (
     questionIndex: number,
     answers: number[],
-    callback: (error: boolean | string) => void
+    callback: (error: false | string) => void
   ) => void;
   getGameState: (callback: (gameState: GameState) => void) => void;
 }

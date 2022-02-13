@@ -8,6 +8,8 @@ import {
 } from "../../common/interfaces/SocketIOInterfaces";
 import { GameManager } from "./Game";
 
+console.log("test");
+
 const port = parseInt(process.env.PORT) || 3000;
 
 const io = new Server<
@@ -17,7 +19,7 @@ const io = new Server<
   SocketData
 >({
   cors: {
-    origin: "http://127.0.0.1:5500",
+    origin: "http://localhost:3001",
     methods: ["GET", "POST"],
   },
 });
