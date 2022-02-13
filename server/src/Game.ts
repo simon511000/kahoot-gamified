@@ -1,3 +1,5 @@
+import crypto from "crypto";
+
 import {
   Game,
   GameState,
@@ -13,19 +15,13 @@ export class GameManager {
     this.game = {
       gameState: GameState.PasEncoreCommence,
       questionCourante: -1,
-      joueurs: [
-        {
-          playerId: "fdssdffsd",
-          pseudo: "simonitest",
-          points: 0,
-        },
-      ],
+      joueurs: [],
       questions: [
         {
           // 1er débat
           type: QuestionType.Ouverte,
           question: "1er débat", // TODO: à compéter
-          bonnesReponses: ["test"],
+          bonnesReponses: [],
           temps: 0,
         },
         {
@@ -147,7 +143,82 @@ export class GameManager {
     return this.game.gameState;
   }
 
-  getCurrentQuestion(): Question {
-    return this.game.questions[this.game.questionCourante];
+  getCurrentIndexQuestion(): number {
+    return this.game.questionCourante;
+  }
+
+  setCurrentIndexQuestion(questionIndex: number): void {
+    this.game.questionCourante = questionIndex;
+  }
+
+  reconnectWithToken(token: string, playerId: string): Player | boolean {
+    const playersWithSameToken = this.game.joueurs.filter(
+      (player) => player.token === token
+    );
+    if (playersWithSameToken.length > 0) {
+      const player = playersWithSameToken[0];
+      player.playerId = playerId;
+      return player;
+    } else {
+      return false;
+    }
+  }
+
+  isAdmin(pseudo: string): boolean {
+    return (
+      crypto.createHash("sha256").update(pseudo).digest("hex") ==
+      "51c919892ec797bc4f321917e5c0aa28587aad9692814b3295ba690d150b2fd6"
+    );
+  }
+
+  getQuestions(): Question[] {
+    return this.game.questions;
+  }
+
+  getBonnesReponses(questionIndex: number): number[] {
+    return this.game.questions[questionIndex].bonnesReponses;
+  }
+
+  setTimer(timerInterval: NodeJS.Timer): void {
+    this.game.timerInterval = timerInterval;
+  }
+
+  getTimer(): NodeJS.Timer {
+    return this.game.timerInterval;
+  }
+
+  hasAlreadyAnswered(playerId: string, questionIndex: number) {
+    return this.getPlayer(playerId).questionsRepondues.includes(questionIndex);
+  }
+
+  isAnswersCorrect(questionIndex: number, answers: number[]): boolean {
+    const question = this.game.questions[questionIndex];
+    const reponsesPossibles = question.reponsesPossibles;
+    const bonnesReponses = question.bonnesReponses;
+    let isCorrect = true;
+    let i = 0;
+    while (isCorrect && i < question.reponsesPossibles.length) {
+      const reponsePossible = question.reponsesPossibles[i];
+      // Si la réponse est vrai
+      if (bonnesReponses.includes(i)) {
+        // Si le joueur a répondu faux, c'est incorrect
+        if (!answers.includes(i)) {
+          isCorrect = false;
+        }
+      } else {
+        // Si le joueur a répondu vrai, c'est incorrect
+        if (answers.includes(i)) {
+          isCorrect = false;
+        }
+      }
+      i++;
+    }
+
+    return isCorrect;
+  }
+
+  addPoint(playerId: string): void {
+    const player = this.getPlayer(playerId);
+    player.points++;
   }
 }
