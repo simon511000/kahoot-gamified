@@ -47,7 +47,7 @@ io.on("connection", (socket) => {
       callback(false, player);
     } else {
       callback(
-        "Ce pseudo a déjà été utilisé, changez de pseudo ou appuyer sur 'se reconnecter'"
+        "Ce pseudo a déjà été utilisé, changez de pseudo ou appuyez sur 'se reconnecter'"
       );
     }
   });
