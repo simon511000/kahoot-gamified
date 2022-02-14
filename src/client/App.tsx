@@ -1,18 +1,19 @@
 import * as React from "react";
-import { instanceOf } from "prop-types";
 import { io, Socket } from "socket.io-client";
 import { toast, ToastContainer, TypeOptions } from "react-toastify";
 import Cookies from "universal-cookie";
 import {
   ServerToClientEvents,
   ClientToServerEvents,
-} from "../../common/interfaces/SocketIOInterfaces";
-import { GameState, Player } from "../../common/interfaces/GameInterfaces";
-import { RegisterPage } from "./RegisterPage";
+} from "../core/interfaces/SocketIOInterfaces";
+import { GameState, Player } from "../core/interfaces/GameInterfaces";
+import { RegisterPage } from "./Games/Burger/pages/RegisterPage";
 
 import "react-toastify/dist/ReactToastify.css";
+import { AdminPage } from "./Games/Burger/pages/AdminPage";
+import { PlayerPage } from "./Games/Burger/pages/PlayerPage";
 
-const ENDPOINT = "ws://127.0.0.1:3000";
+const ENDPOINT = "ws://127.0.0.1:3001";
 
 type AppProps = {};
 type AppState = {
@@ -28,7 +29,9 @@ export class App extends React.Component<AppProps, AppState> {
   constructor(props: AppProps) {
     super(props);
     this.cookies = new Cookies();
-    this.socket = io(ENDPOINT);
+    this.socket = io(ENDPOINT, {
+      transports: ["websocket", "polling", "flashsocket"],
+    });
 
     this.state = {
       isLogged: false,
@@ -56,7 +59,7 @@ export class App extends React.Component<AppProps, AppState> {
     const isLogged = await new Promise((resolve: (value: boolean) => void) =>
       this.socket.emit("register", pseudo, (error, player) => {
         if (error === false) {
-          this.setState({ isLogged: true, player });
+          this.onLogin(player!);
           this.cookies.set("playerToken", player!.token, { path: "/" });
           this.notify(
             `YEY! Tu t'es bien connecté au nom de ${player!.pseudo}`,
@@ -79,7 +82,7 @@ export class App extends React.Component<AppProps, AppState> {
         this.cookies.get("playerToken") || "",
         (error, player) => {
           if (error === false) {
-            this.setState({ isLogged: true, player });
+            this.onLogin(player!);
             this.notify(
               `YEY! Tu t'es bien reconnecté au nom de ${player!.pseudo}`,
               "success"
@@ -95,11 +98,30 @@ export class App extends React.Component<AppProps, AppState> {
     return isLogged;
   }
 
+  async onLogin(player: Player): Promise<void> {
+    // On récupère l'état initial de la partie
+    const gameState = await new Promise(
+      (resolve: (value: GameState) => void) => {
+        this.socket.emit("getGameState", resolve);
+      }
+    );
+
+    this.setState({ isLogged: true, player, gameState });
+
+    setInterval(() => {
+      this.setState({ gameState: 2 });
+    }, 5000);
+  }
+
   render(): React.ReactNode {
     return (
       <div>
         {this.state.isLogged ? (
-          <p>Tu es bien connecté au nom de {this.state.player!.pseudo}.</p>
+          this.state.player!.isAdmin ? (
+            <AdminPage gameState={this.state.gameState!} />
+          ) : (
+            <PlayerPage />
+          )
         ) : (
           <RegisterPage
             handleRegister={this.handleRegister}

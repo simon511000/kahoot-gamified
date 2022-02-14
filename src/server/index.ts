@@ -1,16 +1,14 @@
 import { Server } from "socket.io";
-import { Player, QuestionType } from "../../common/interfaces/GameInterfaces";
+import { Player, QuestionType } from "../core/interfaces/GameInterfaces";
 import {
   ClientToServerEvents,
   ServerToClientEvents,
   InterServerEvents,
   SocketData,
-} from "../../common/interfaces/SocketIOInterfaces";
+} from "../core/interfaces/SocketIOInterfaces";
 import { GameManager } from "./Game";
 
-console.log("test");
-
-const port = parseInt(process.env.PORT) || 3000;
+const port = parseInt(process.env.PORT ?? "3001");
 
 const io = new Server<
   ClientToServerEvents,
@@ -19,8 +17,8 @@ const io = new Server<
   SocketData
 >({
   cors: {
-    origin: "http://localhost:3001",
-    methods: ["GET", "POST"],
+    origin: "http://localhost:3000",
+    credentials: true,
   },
 });
 
@@ -116,8 +114,9 @@ io.on("connection", (socket) => {
       // Si la question n'est pas déjà en cours, il est inutile de la stopper
       if (game.getCurrentIndexQuestion() !== questionIndex) {
         game.setCurrentIndexQuestion(-1);
-        if (game.getTimer() !== null) {
-          clearInterval(game.getTimer());
+        const timer = game.getTimer();
+        if (timer !== undefined) {
+          clearInterval(timer);
         }
         socket.broadcast.emit(
           "questionFinished",
@@ -158,9 +157,9 @@ io.on("connection", (socket) => {
     if (game.getCurrentIndexQuestion() === questionIndex) {
       // On vérifie que le joueur n'a pas déjà répondu à la question
       if (!game.hasAlreadyAnswered(socket.id, questionIndex)) {
-        // Si ce n'est pas une question ouverte et que le joueur a bon, on lui ajoute 1 point
+        // Si la question a des réponses possibles, on lui ajoute 1 point
         if (
-          game.getQuestions()[questionIndex].type !== QuestionType.Ouverte &&
+          game.getBonnesReponses(questionIndex).length > 0 &&
           game.isAnswersCorrect(questionIndex, answers)
         ) {
           game.addPoint(socket.id);
@@ -174,4 +173,5 @@ io.on("connection", (socket) => {
   });
 });
 
+console.log(`Démarrage sur le port ${port}`);
 io.listen(port);

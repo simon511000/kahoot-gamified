@@ -6,7 +6,7 @@ import {
   QuestionType,
   Question,
   Player,
-} from "../../common/interfaces/GameInterfaces";
+} from "../core/interfaces/GameInterfaces";
 
 export class GameManager {
   game: Game;
@@ -34,7 +34,7 @@ export class GameManager {
             "9 décembre 1901",
             "29 décembre 1901",
           ],
-          bonnesReponses: [], // TODO: à compéter
+          bonnesReponses: [1],
           temps: 30,
         },
         {
@@ -48,7 +48,7 @@ export class GameManager {
             "Passionnément",
             "À la folie",
           ],
-          bonnesReponses: [], // TODO: à compléter
+          bonnesReponses: [],
           temps: 30,
         },
         {
@@ -60,7 +60,7 @@ export class GameManager {
             "Toujours obligatoire",
             "Jamais obligatoire",
           ],
-          bonnesReponses: [], // TODO: à compéter
+          bonnesReponses: [0],
           temps: 30,
         },
         {
@@ -74,7 +74,7 @@ export class GameManager {
             "Rapidité",
             "Continuité",
           ],
-          bonnesReponses: [], // TODO: à compéter
+          bonnesReponses: [0, 1, 3],
           temps: 30,
         },
         {
@@ -89,15 +89,15 @@ export class GameManager {
             "Le juge",
             "La commune",
           ],
-          bonnesReponses: [], // TODO: à compéter
+          bonnesReponses: [4],
           temps: 30,
         },
         {
           // Débat 2
           type: QuestionType.Ouverte,
           question:
-            "En tant que maire, sur quels éléments vous baseriez-vous pour accepter ou refuser les repas de substitution ?",
-          bonnesReponses: [], // TODO: à compléter,
+            "En tant que maire, quels seraient vos arguments pour accepter ou refuser les repas de substitution ?",
+          bonnesReponses: [],
           temps: 0,
         },
       ],
@@ -183,7 +183,7 @@ export class GameManager {
     this.game.timerInterval = timerInterval;
   }
 
-  getTimer(): NodeJS.Timer {
+  getTimer(): NodeJS.Timer | undefined {
     return this.game.timerInterval;
   }
 
@@ -197,6 +197,7 @@ export class GameManager {
     const bonnesReponses = question.bonnesReponses;
     let isCorrect = true;
     let i = 0;
+    if (question.reponsesPossibles === undefined) return false;
     while (isCorrect && i < question.reponsesPossibles.length) {
       const reponsePossible = question.reponsesPossibles[i];
       // Si la réponse est vrai
