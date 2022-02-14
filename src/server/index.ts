@@ -1,5 +1,5 @@
 import { Server } from "socket.io";
-import { Player, QuestionType } from "../core/interfaces/GameInterfaces";
+import { Player } from "../core/interfaces/GameInterfaces";
 import {
   ClientToServerEvents,
   ServerToClientEvents,
@@ -71,18 +71,21 @@ io.on("connection", (socket) => {
 
   socket.on("adminStartQuestion", (questionIndex, callback) => {
     const player = game.getPlayer(socket.id);
+    console.error(player);
     if (player.isAdmin) {
       // Si une question est déjà en cours, on ne peux pas en démarrer une nouvelle
       if (game.getCurrentIndexQuestion() === -1) {
+        const question = game.getQuestions()[questionIndex];
+        console.log("Démarrage de la question :", question);
         game.setCurrentIndexQuestion(questionIndex);
-        io.sockets.emit(
-          "newQuestion",
-          questionIndex,
-          game.getQuestions()[questionIndex]
-        );
+        // On envoie la question sans divulger les bonnes réponses
+        io.sockets.emit("newQuestion", questionIndex, {
+          ...question,
+          bonnesReponses: [],
+        });
 
         // On broadcast le timer
-        let tempsRestant = game.getQuestions()[questionIndex].temps;
+        let tempsRestant = question.temps;
         if (tempsRestant > 0) {
           game.setTimer(
             setInterval(() => {
@@ -94,6 +97,7 @@ io.on("connection", (socket) => {
                   "questionFinished",
                   game.getBonnesReponses(questionIndex)
                 );
+                clearInterval(game.getTimer()!);
               }
             }, 1000)
           );
