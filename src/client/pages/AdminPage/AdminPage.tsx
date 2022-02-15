@@ -8,7 +8,7 @@ import {
   Question,
 } from "core/interfaces/GameInterfaces";
 
-type AdminProps = {
+type AdminPageProps = {
   gameState: GameState;
   gameStateData:
     | GameStateJeuPasEncoreCommence
@@ -22,12 +22,12 @@ type AdminProps = {
   handleFinishGame: () => Promise<void>;
   handleResetGame: () => Promise<void>;
 };
-type AdminState = {
+type AdminPageState = {
   questions: Question[];
 };
 
-export class AdminPage extends React.Component<AdminProps, AdminState> {
-  constructor(props: AdminProps) {
+export class AdminPage extends React.Component<AdminPageProps, AdminPageState> {
+  constructor(props: AdminPageProps) {
     super(props);
     this.state = {
       questions: [],
@@ -53,7 +53,7 @@ export class AdminPage extends React.Component<AdminProps, AdminState> {
     let etatPartie = "";
     switch (this.props.gameState) {
       case GameState.JeuPasEncoreCommence:
-        etatPartie = "Pas encore commencé";
+        etatPartie = "Pas encore commencée";
         break;
       case GameState.QuestionCommence:
         etatPartie = `Question n°${

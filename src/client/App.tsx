@@ -266,7 +266,11 @@ export class App extends React.Component<AppProps, AppState> {
               handleResetGame={this.handleAdminResetGame}
             />
           ) : (
-            <PlayerPage />
+            <PlayerPage
+              gameState={this.state.gameState}
+              gameStateData={this.state.gameStateData}
+              timer={this.state.timer}
+            />
           )
         ) : (
           <RegisterPage

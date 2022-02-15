@@ -102,24 +102,24 @@ io.on("connection", (socket) => {
           // On broadcast le timer
           let tempsRestant = question.temps;
           if (tempsRestant > 0) {
-            game.setTimer(
-              setInterval(() => {
-                io.sockets.emit("timer", tempsRestant);
-                tempsRestant--;
-                // Quand le timer est terminé, on termine la question
-                if (tempsRestant === -1) {
-                  const gameStateData: GameStateQuestionTermine = {
-                    bonnesReponses: game.getBonnesReponses(questionIndex),
-                  };
-                  game.setGameState(GameState.QuestionTermine, gameStateData);
-                  io.sockets.emit(
-                    "gameStateChangeToQuestionTermine",
-                    gameStateData
-                  );
-                  clearInterval(game.getTimer()!);
-                }
-              }, 1000)
-            );
+            const timerTick = () => {
+              io.sockets.emit("timer", tempsRestant);
+              tempsRestant--;
+              // Quand le timer est terminé, on termine la question
+              if (tempsRestant === -1) {
+                const gameStateData: GameStateQuestionTermine = {
+                  bonnesReponses: game.getBonnesReponses(questionIndex),
+                };
+                game.setGameState(GameState.QuestionTermine, gameStateData);
+                io.sockets.emit(
+                  "gameStateChangeToQuestionTermine",
+                  gameStateData
+                );
+                clearInterval(game.getTimer()!);
+              }
+            };
+            timerTick();
+            game.setTimer(setInterval(timerTick, 1000));
           }
         } else {
           callback(
