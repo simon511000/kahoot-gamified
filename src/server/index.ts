@@ -1,5 +1,12 @@
 import { Server } from "socket.io";
-import { Player } from "../core/interfaces/GameInterfaces";
+import {
+  GameState,
+  GameStateJeuPasEncoreCommence,
+  GameStateJeuTermine,
+  GameStateQuestionCommence,
+  GameStateQuestionTermine,
+  Player,
+} from "../core/interfaces/GameInterfaces";
 import {
   ClientToServerEvents,
   ServerToClientEvents,
@@ -77,12 +84,16 @@ io.on("connection", (socket) => {
       if (game.getCurrentIndexQuestion() === -1) {
         const question = game.getQuestions()[questionIndex];
         console.log("Démarrage de la question :", question);
-        game.setCurrentIndexQuestion(questionIndex);
+        const gameStateData: GameStateQuestionCommence = {
+          questionIndex,
+          question: {
+            ...question,
+            bonnesReponses: [],
+          },
+        };
+        game.setGameState(GameState.QuestionCommence, gameStateData);
         // On envoie la question sans divulger les bonnes réponses
-        io.sockets.emit("newQuestion", questionIndex, {
-          ...question,
-          bonnesReponses: [],
-        });
+        io.sockets.emit("gameStateChangeToQuestionCommence", gameStateData);
 
         // On broadcast le timer
         let tempsRestant = question.temps;
@@ -92,10 +103,14 @@ io.on("connection", (socket) => {
               io.sockets.emit("timer", tempsRestant);
               tempsRestant--;
               // Quand le timer est terminé, on termine la question
-              if (tempsRestant === 0) {
+              if (tempsRestant === -1) {
+                const gameStateData: GameStateQuestionTermine = {
+                  bonnesReponses: game.getBonnesReponses(questionIndex),
+                };
+                game.setGameState(GameState.QuestionTermine, gameStateData);
                 io.sockets.emit(
-                  "questionFinished",
-                  game.getBonnesReponses(questionIndex)
+                  "gameStateChangeToQuestionTermine",
+                  gameStateData
                 );
                 clearInterval(game.getTimer()!);
               }
@@ -116,16 +131,17 @@ io.on("connection", (socket) => {
     const player = game.getPlayer(socket.id);
     if (player.isAdmin) {
       // Si la question n'est pas déjà en cours, il est inutile de la stopper
-      if (game.getCurrentIndexQuestion() !== questionIndex) {
-        game.setCurrentIndexQuestion(-1);
+      console.log(game.getGameState(), game.getGameStateData());
+      if (game.getCurrentIndexQuestion() === questionIndex) {
+        const gameStateData: GameStateQuestionTermine = {
+          bonnesReponses: game.getBonnesReponses(questionIndex),
+        };
+        game.setGameState(GameState.QuestionTermine, gameStateData);
         const timer = game.getTimer();
         if (timer !== undefined) {
           clearInterval(timer);
         }
-        socket.broadcast.emit(
-          "questionFinished",
-          game.getBonnesReponses(questionIndex)
-        );
+        io.sockets.emit("gameStateChangeToQuestionTermine", gameStateData);
       } else {
         callback("La question est déjà stoppée");
       }
@@ -139,7 +155,9 @@ io.on("connection", (socket) => {
     if (player.isAdmin) {
       // Si une question est en cours, on ne peux pas stopper la partie
       if (game.getCurrentIndexQuestion() === -1) {
-        socket.broadcast.emit("gameFinished");
+        const gameState: GameStateJeuTermine = {};
+        game.setGameState(GameState.JeuTermine, gameState);
+        io.sockets.emit("gameStateChangeToJeuTermine", gameState);
       } else {
         callback(
           "Veuillez stopper la question en cours avant de terminer la partie."
@@ -150,10 +168,26 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("adminResetGame", (callback) => {
+    const player = game.getPlayer(socket.id);
+    if (player.isAdmin) {
+      const gameState: GameStateJeuPasEncoreCommence = {};
+      const timer = game.getTimer();
+      if (timer !== undefined) {
+        clearInterval(timer);
+      }
+      game.resetGame();
+      game.setGameState(GameState.JeuPasEncoreCommence, gameState);
+      io.sockets.emit("gameStateChangeToJeuPasEncoreCommence", gameState);
+    } else {
+      callback("Vous devez être admin pour effectuer cette opération.");
+    }
+  });
+
   /****** PLAYER ******/
 
   socket.on("getGameState", (callback) => {
-    callback(game.getGameState());
+    callback(game.getGameState(), game.getGameStateData());
   });
 
   socket.on("answerQuestion", (questionIndex, answers, callback) => {

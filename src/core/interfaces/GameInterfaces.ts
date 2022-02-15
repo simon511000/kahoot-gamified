@@ -24,15 +24,29 @@ export interface Question {
 }
 
 export enum GameState {
-  PasEncoreCommence,
-  EnJeu,
-  EnAttenteProchainJeu,
-  Termine,
+  JeuPasEncoreCommence,
+  QuestionCommence,
+  QuestionTermine,
+  JeuTermine,
 }
+
+export interface GameStateJeuPasEncoreCommence {}
+export interface GameStateQuestionCommence {
+  questionIndex: number;
+  question: Question;
+}
+export interface GameStateQuestionTermine {
+  bonnesReponses: number[];
+}
+export interface GameStateJeuTermine {}
 
 export interface Game {
   gameState: GameState;
-  questionCourante: number; // Index de la question courante (-1 si aucune)
+  gameStateData:
+    | GameStateJeuPasEncoreCommence
+    | GameStateQuestionCommence
+    | GameStateQuestionTermine
+    | GameStateJeuTermine;
   joueurs: Player[];
   questions: Question[];
   timerInterval?: NodeJS.Timer;

@@ -1,10 +1,25 @@
-import { Question, GameState, Player } from "./GameInterfaces";
+import {
+  Question,
+  GameState,
+  Player,
+  GameStateJeuPasEncoreCommence,
+  GameStateQuestionCommence,
+  GameStateQuestionTermine,
+  GameStateJeuTermine,
+} from "./GameInterfaces";
 
 export interface ServerToClientEvents {
-  newQuestion: (questionIndex: number, question: Question) => void;
+  gameStateChangeToJeuPasEncoreCommence: (
+    gameStateData: GameStateJeuPasEncoreCommence
+  ) => void;
+  gameStateChangeToQuestionCommence: (
+    gameStateData: GameStateQuestionCommence
+  ) => void;
+  gameStateChangeToQuestionTermine: (
+    gameStateData: GameStateQuestionTermine
+  ) => void;
+  gameStateChangeToJeuTermine: (gameStateData: GameStateJeuTermine) => void;
   timer: (timer: number) => void;
-  questionFinished: (bonnesReponses: number[]) => void;
-  gameFinished: () => void;
 }
 
 export interface ClientToServerEvents {
@@ -29,6 +44,7 @@ export interface ClientToServerEvents {
     callback: (error: false | string) => void
   ) => void;
   adminFinishGame: (callback: (error: false | string) => void) => void;
+  adminResetGame: (callback: (error: false | string) => void) => void;
 
   /****** PLAYER ******/
   answerQuestion: (
@@ -36,7 +52,16 @@ export interface ClientToServerEvents {
     answers: number[],
     callback: (error: false | string) => void
   ) => void;
-  getGameState: (callback: (gameState: GameState) => void) => void;
+  getGameState: (
+    callback: (
+      gameState: GameState,
+      gameStateData:
+        | GameStateJeuPasEncoreCommence
+        | GameStateQuestionCommence
+        | GameStateQuestionTermine
+        | GameStateJeuTermine
+    ) => void
+  ) => void;
 }
 
 export interface InterServerEvents {}

@@ -1,107 +1,22 @@
 import crypto from "crypto";
+import { initialGame } from "./initialGame";
 
 import {
   Game,
   GameState,
-  QuestionType,
   Question,
   Player,
+  GameStateJeuPasEncoreCommence,
+  GameStateQuestionCommence,
+  GameStateJeuTermine,
+  GameStateQuestionTermine,
 } from "../core/interfaces/GameInterfaces";
 
 export class GameManager {
   game: Game;
 
   constructor() {
-    this.game = {
-      gameState: GameState.PasEncoreCommence,
-      questionCourante: -1,
-      joueurs: [],
-      questions: [
-        {
-          // 1er débat
-          type: QuestionType.Ouverte,
-          question: "1er débat", // TODO: à compéter
-          bonnesReponses: [],
-          temps: 0,
-        },
-        {
-          // QCM 1
-          type: QuestionType.GarsQuiBouffe,
-          question:
-            "Quelle est la date de la loi séparant l’Eglise et l’Etat ?",
-          reponsesPossibles: [
-            "19 décembre 1901",
-            "9 décembre 1901",
-            "29 décembre 1901",
-          ],
-          bonnesReponses: [1],
-          temps: 30,
-        },
-        {
-          // QCM 2
-          type: QuestionType.Tables,
-          question:
-            "À quelle fréquence êtes-vous confronté au débat de laïcité dans le milieu scolaire ?",
-          reponsesPossibles: [
-            "Un peu",
-            "Beaucoup",
-            "Passionnément",
-            "À la folie",
-          ],
-          bonnesReponses: [],
-          temps: 30,
-        },
-        {
-          // QCM 3
-          type: QuestionType.GarsQuiBouffe,
-          question: "La restauration sociale est un service public …",
-          reponsesPossibles: [
-            "Parfois obligatoire",
-            "Toujours obligatoire",
-            "Jamais obligatoire",
-          ],
-          bonnesReponses: [0],
-          temps: 30,
-        },
-        {
-          // QCM 4
-          type: QuestionType.Burger,
-          question:
-            "Quels sont les principes que doivent respecter les autorités en charge d’un service public ?",
-          reponsesPossibles: [
-            "Égalité",
-            "Accessibilité",
-            "Rapidité",
-            "Continuité",
-          ],
-          bonnesReponses: [0, 1, 3],
-          temps: 30,
-        },
-        {
-          // QCM 5
-          type: QuestionType.GarsQuiBouffe,
-          question:
-            "Quelle est l’autorité publique gérant les cantines des écoles primaires ?",
-          reponsesPossibles: [
-            "L'État",
-            "La région",
-            "Le département",
-            "Le juge",
-            "La commune",
-          ],
-          bonnesReponses: [4],
-          temps: 30,
-        },
-        {
-          // Débat 2
-          type: QuestionType.Ouverte,
-          question:
-            "En tant que maire, quels seraient vos arguments pour accepter ou refuser les repas de substitution ?",
-          bonnesReponses: [],
-          temps: 0,
-        },
-      ],
-    };
+    this.game = { ...initialGame };
   }
 
   addPlayer(newPlayer: Player): boolean {
@@ -124,31 +39,37 @@ export class GameManager {
     )[0];
   }
 
-  getGameState(): GameState {
+  getGameState() {
     return this.game.gameState;
+  }
+
+  getGameStateData() {
+    return this.game.gameStateData;
+  }
+
+  setGameState(
+    gameState: GameState,
+    gameStateData:
+      | GameStateJeuPasEncoreCommence
+      | GameStateQuestionCommence
+      | GameStateQuestionTermine
+      | GameStateJeuTermine
+  ) {
+    this.game = {
+      ...this.game,
+      gameState,
+      gameStateData,
+    };
   }
 
   stopGame() {
-    this.game.gameState = GameState.Termine;
-  }
-
-  nextQuestion(): GameState {
-    // Si c'était la dernière question, on stop la partie
-    if (this.game.questionCourante + 1 == this.game.questions.length) {
-      this.stopGame();
-    } else {
-      this.game.questionCourante += 1;
-    }
-
-    return this.game.gameState;
+    this.setGameState(GameState.JeuTermine, <GameStateJeuTermine>{});
   }
 
   getCurrentIndexQuestion(): number {
-    return this.game.questionCourante;
-  }
-
-  setCurrentIndexQuestion(questionIndex: number): void {
-    this.game.questionCourante = questionIndex;
+    return this.game.gameState == GameState.QuestionCommence
+      ? (<GameStateQuestionCommence>this.game.gameStateData).questionIndex
+      : -1;
   }
 
   reconnectWithToken(token: string, playerId: string): Player | boolean {
@@ -221,5 +142,9 @@ export class GameManager {
   addPoint(playerId: string): void {
     const player = this.getPlayer(playerId);
     player.points++;
+  }
+
+  resetGame(): void {
+    this.game = { ...initialGame };
   }
 }

@@ -6,12 +6,20 @@ import {
   ServerToClientEvents,
   ClientToServerEvents,
 } from "core/interfaces/SocketIOInterfaces";
-import { GameState, Player, Question } from "core/interfaces/GameInterfaces";
-import { RegisterPage } from "./Games/Burger/pages/RegisterPage/RegisterPage";
+import {
+  GameState,
+  GameStateJeuPasEncoreCommence,
+  GameStateJeuTermine,
+  GameStateQuestionCommence,
+  GameStateQuestionTermine,
+  Player,
+  Question,
+} from "core/interfaces/GameInterfaces";
+import { RegisterPage } from "./pages/RegisterPage/RegisterPage";
 
 import "react-toastify/dist/ReactToastify.css";
-import { AdminPage } from "./Games/Burger/pages/AdminPage/AdminPage";
-import { PlayerPage } from "./Games/Burger/pages/PlayerPage/PlayerPage";
+import { AdminPage } from "./pages/AdminPage/AdminPage";
+import { PlayerPage } from "./pages/PlayerPage/PlayerPage";
 
 const ENDPOINT = "ws://127.0.0.1:3001";
 
@@ -20,7 +28,13 @@ type AppState = {
   isLogged: boolean;
   playerToken: string;
   player?: Player;
-  gameState?: GameState;
+  gameState: GameState;
+  gameStateData:
+    | GameStateJeuPasEncoreCommence
+    | GameStateQuestionCommence
+    | GameStateQuestionTermine
+    | GameStateJeuTermine;
+  timer: number;
 };
 export class App extends React.Component<AppProps, AppState> {
   private socket: Socket<ServerToClientEvents, ClientToServerEvents>;
@@ -36,22 +50,10 @@ export class App extends React.Component<AppProps, AppState> {
     this.state = {
       isLogged: false,
       playerToken: this.cookies.get("playerToken") || "",
+      gameState: GameState.JeuPasEncoreCommence,
+      gameStateData: {} as GameStateJeuPasEncoreCommence,
+      timer: -1,
     };
-
-    this.socket.on("newQuestion", (questionIndex, question) => {
-      console.log("L'admin a démarré une nouvelle question :", question);
-    });
-
-    this.socket.on("timer", (timer) => {
-      console.log("Timer :", timer);
-    });
-
-    this.socket.on("questionFinished", (bonnesReponses) => {
-      console.log(
-        "L'admin a démarré une terminé la question. Voici les bonnes réponses",
-        bonnesReponses
-      );
-    });
 
     this.handleRegister = this.handleRegister.bind(this);
     this.handleReconnect = this.handleReconnect.bind(this);
@@ -59,6 +61,53 @@ export class App extends React.Component<AppProps, AppState> {
     this.handleAdminStartQuestion = this.handleAdminStartQuestion.bind(this);
     this.handleAdminStopQuestion = this.handleAdminStopQuestion.bind(this);
     this.handleAdminFinishGame = this.handleAdminFinishGame.bind(this);
+    this.handleAdminResetGame = this.handleAdminResetGame.bind(this);
+  }
+
+  componentDidMount() {
+    this.handleSocketEvents();
+  }
+
+  componentWillUnmount() {
+    this.socket.off();
+  }
+
+  handleSocketEvents() {
+    this.socket.on("gameStateChangeToJeuPasEncoreCommence", (gameStateData) => {
+      this.handleGameStateChange(GameState.JeuPasEncoreCommence, gameStateData);
+      console.log("GameState modifié en PasEncoreCommence", gameStateData);
+    });
+    this.socket.on("gameStateChangeToQuestionCommence", (gameStateData) => {
+      this.handleGameStateChange(GameState.QuestionCommence, gameStateData);
+      console.log("GameState modifié en QuestionCommence", gameStateData);
+    });
+    this.socket.on("gameStateChangeToQuestionTermine", (gameStateData) => {
+      this.handleGameStateChange(GameState.QuestionTermine, gameStateData);
+      this.setState({ timer: -1 });
+      console.log("GameState modifié en QuestionTermine", gameStateData);
+    });
+    this.socket.on("gameStateChangeToJeuTermine", (gameStateData) => {
+      this.handleGameStateChange(GameState.JeuTermine, gameStateData);
+      console.log("GameState modifié en JeuTermine", gameStateData);
+    });
+    this.socket.on("timer", (timer) => {
+      this.setState({ timer });
+      console.log(`Timer : ${timer}`);
+    });
+  }
+
+  handleGameStateChange(
+    gameState: GameState,
+    gameStateData:
+      | GameStateJeuPasEncoreCommence
+      | GameStateQuestionCommence
+      | GameStateQuestionTermine
+      | GameStateJeuTermine
+  ) {
+    this.setState({
+      gameState,
+      gameStateData,
+    });
   }
 
   notify(message: string, type: TypeOptions = "default"): void {
@@ -118,14 +167,25 @@ export class App extends React.Component<AppProps, AppState> {
   }
 
   async onLogin(player: Player): Promise<void> {
-    // On récupère l'état initial de la partie
-    const gameState = await new Promise(
-      (resolve: (value: GameState) => void) => {
-        this.socket.emit("getGameState", resolve);
+    // On récupère l'état de la partie
+    const { gameState, gameStateData } = await new Promise(
+      (
+        resolve: (value: {
+          gameState: GameState;
+          gameStateData:
+            | GameStateJeuPasEncoreCommence
+            | GameStateQuestionCommence
+            | GameStateQuestionTermine
+            | GameStateJeuTermine;
+        }) => void
+      ) => {
+        this.socket.emit("getGameState", (gameState, gameStateData) =>
+          resolve({ gameState, gameStateData })
+        );
       }
     );
 
-    this.setState({ isLogged: true, player, gameState });
+    this.setState({ isLogged: true, player, gameState, gameStateData });
   }
 
   async adminGetQuestions(): Promise<Question[] | undefined> {
@@ -162,6 +222,7 @@ export class App extends React.Component<AppProps, AppState> {
         if (error !== false) {
           this.notify(error, "error");
         }
+        this.setState({ timer: -1 });
         resolve();
       });
     });
@@ -178,17 +239,31 @@ export class App extends React.Component<AppProps, AppState> {
     });
   }
 
+  async handleAdminResetGame(): Promise<void> {
+    return await new Promise((resolve: () => void) => {
+      this.socket.emit("adminResetGame", (error) => {
+        if (error !== false) {
+          this.notify(error, "error");
+        }
+        resolve();
+      });
+    });
+  }
+
   render(): React.ReactNode {
     return (
       <div>
         {this.state.isLogged ? (
           this.state.player!.isAdmin ? (
             <AdminPage
-              gameState={this.state.gameState!}
+              gameState={this.state.gameState}
+              gameStateData={this.state.gameStateData}
+              timer={this.state.timer}
               getQuestions={this.adminGetQuestions}
               handleStartQuestion={this.handleAdminStartQuestion}
               handleStopQuestion={this.handleAdminStopQuestion}
               handleFinishGame={this.handleAdminFinishGame}
+              handleResetGame={this.handleAdminResetGame}
             />
           ) : (
             <PlayerPage />
