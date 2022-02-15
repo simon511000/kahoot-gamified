@@ -33,7 +33,7 @@ export class GameManager {
     }
   }
 
-  getPlayer(playerId: string): Player {
+  getPlayer(playerId: string): Player | undefined {
     return this.game.joueurs.filter(
       (player) => player.playerId === playerId
     )[0];
@@ -108,8 +108,8 @@ export class GameManager {
     return this.game.timerInterval;
   }
 
-  hasAlreadyAnswered(playerId: string, questionIndex: number) {
-    return this.getPlayer(playerId).questionsRepondues.includes(questionIndex);
+  hasAlreadyAnswered(playerId: string, questionIndex: number): boolean {
+    return this.getPlayer(playerId)!.questionsRepondues.includes(questionIndex);
   }
 
   isAnswersCorrect(questionIndex: number, answers: number[]): boolean {
@@ -141,7 +141,7 @@ export class GameManager {
 
   addPoint(playerId: string): void {
     const player = this.getPlayer(playerId);
-    player.points++;
+    player!.points++;
   }
 
   resetGame(): void {

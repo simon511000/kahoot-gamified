@@ -48,7 +48,6 @@ io.on("connection", (socket) => {
     const isPlayerAdded = game.addPlayer(player);
 
     if (isPlayerAdded) {
-      console.log(`Le joueur ${pseudo} s'est inscrit avec succès!`);
       callback(false, player);
     } else {
       callback(
@@ -69,118 +68,137 @@ io.on("connection", (socket) => {
   /****** ADMIN ******/
   socket.on("adminGetQuestions", (callback) => {
     const player = game.getPlayer(socket.id);
-    if (player.isAdmin) {
-      callback(false, game.getQuestions());
+    if (player !== undefined) {
+      if (player.isAdmin) {
+        callback(false, game.getQuestions());
+      } else {
+        return callback(
+          "Vous devez être admin pour effectuer cette opération."
+        );
+      }
     } else {
-      return callback("Vous devez être admin pour effectuer cette opération.");
+      callback("Erreur d'authentification, veuillez rafraichir la page.");
     }
   });
 
   socket.on("adminStartQuestion", (questionIndex, callback) => {
     const player = game.getPlayer(socket.id);
-    console.error(player);
-    if (player.isAdmin) {
-      // Si une question est déjà en cours, on ne peux pas en démarrer une nouvelle
-      if (game.getCurrentIndexQuestion() === -1) {
-        const question = game.getQuestions()[questionIndex];
-        console.log("Démarrage de la question :", question);
-        const gameStateData: GameStateQuestionCommence = {
-          questionIndex,
-          question: {
-            ...question,
-            bonnesReponses: [],
-          },
-        };
-        game.setGameState(GameState.QuestionCommence, gameStateData);
-        // On envoie la question sans divulger les bonnes réponses
-        io.sockets.emit("gameStateChangeToQuestionCommence", gameStateData);
+    if (player !== undefined) {
+      if (player.isAdmin) {
+        // Si une question est déjà en cours, on ne peux pas en démarrer une nouvelle
+        if (game.getCurrentIndexQuestion() === -1) {
+          const question = game.getQuestions()[questionIndex];
+          const gameStateData: GameStateQuestionCommence = {
+            questionIndex,
+            question: {
+              ...question,
+              bonnesReponses: [],
+            },
+          };
+          game.setGameState(GameState.QuestionCommence, gameStateData);
+          // On envoie la question sans divulger les bonnes réponses
+          io.sockets.emit("gameStateChangeToQuestionCommence", gameStateData);
 
-        // On broadcast le timer
-        let tempsRestant = question.temps;
-        if (tempsRestant > 0) {
-          game.setTimer(
-            setInterval(() => {
-              io.sockets.emit("timer", tempsRestant);
-              tempsRestant--;
-              // Quand le timer est terminé, on termine la question
-              if (tempsRestant === -1) {
-                const gameStateData: GameStateQuestionTermine = {
-                  bonnesReponses: game.getBonnesReponses(questionIndex),
-                };
-                game.setGameState(GameState.QuestionTermine, gameStateData);
-                io.sockets.emit(
-                  "gameStateChangeToQuestionTermine",
-                  gameStateData
-                );
-                clearInterval(game.getTimer()!);
-              }
-            }, 1000)
+          // On broadcast le timer
+          let tempsRestant = question.temps;
+          if (tempsRestant > 0) {
+            game.setTimer(
+              setInterval(() => {
+                io.sockets.emit("timer", tempsRestant);
+                tempsRestant--;
+                // Quand le timer est terminé, on termine la question
+                if (tempsRestant === -1) {
+                  const gameStateData: GameStateQuestionTermine = {
+                    bonnesReponses: game.getBonnesReponses(questionIndex),
+                  };
+                  game.setGameState(GameState.QuestionTermine, gameStateData);
+                  io.sockets.emit(
+                    "gameStateChangeToQuestionTermine",
+                    gameStateData
+                  );
+                  clearInterval(game.getTimer()!);
+                }
+              }, 1000)
+            );
+          }
+        } else {
+          callback(
+            "Veuillez stopper la question en cours avant d'en démarrer une nouvelle."
           );
         }
       } else {
-        callback(
-          "Veuillez stopper la question en cours avant d'en démarrer une nouvelle."
-        );
+        callback("Vous devez être admin pour effectuer cette opération.");
       }
     } else {
-      callback("Vous devez être admin pour effectuer cette opération.");
+      callback("Erreur d'authentification, veuillez rafraichir la page.");
     }
   });
 
   socket.on("adminStopQuestion", (questionIndex, callback) => {
     const player = game.getPlayer(socket.id);
-    if (player.isAdmin) {
-      // Si la question n'est pas déjà en cours, il est inutile de la stopper
-      console.log(game.getGameState(), game.getGameStateData());
-      if (game.getCurrentIndexQuestion() === questionIndex) {
-        const gameStateData: GameStateQuestionTermine = {
-          bonnesReponses: game.getBonnesReponses(questionIndex),
-        };
-        game.setGameState(GameState.QuestionTermine, gameStateData);
-        const timer = game.getTimer();
-        if (timer !== undefined) {
-          clearInterval(timer);
+    if (player !== undefined) {
+      if (player.isAdmin) {
+        // Si la question n'est pas déjà en cours, il est inutile de la stopper
+        if (game.getCurrentIndexQuestion() === questionIndex) {
+          const gameStateData: GameStateQuestionTermine = {
+            bonnesReponses: game.getBonnesReponses(questionIndex),
+          };
+          game.setGameState(GameState.QuestionTermine, gameStateData);
+          const timer = game.getTimer();
+          if (timer !== undefined) {
+            clearInterval(timer);
+          }
+          io.sockets.emit("gameStateChangeToQuestionTermine", gameStateData);
+        } else {
+          callback("La question est déjà stoppée");
         }
-        io.sockets.emit("gameStateChangeToQuestionTermine", gameStateData);
       } else {
-        callback("La question est déjà stoppée");
+        callback("Vous devez être admin pour effectuer cette opération.");
       }
     } else {
-      callback("Vous devez être admin pour effectuer cette opération.");
+      callback("Erreur d'authentification, veuillez rafraichir la page.");
     }
   });
 
   socket.on("adminFinishGame", (callback) => {
     const player = game.getPlayer(socket.id);
-    if (player.isAdmin) {
-      // Si une question est en cours, on ne peux pas stopper la partie
-      if (game.getCurrentIndexQuestion() === -1) {
-        const gameState: GameStateJeuTermine = {};
-        game.setGameState(GameState.JeuTermine, gameState);
-        io.sockets.emit("gameStateChangeToJeuTermine", gameState);
+    if (player !== undefined) {
+      if (player.isAdmin) {
+        // Si une question est en cours, on ne peux pas stopper la partie
+        if (game.getCurrentIndexQuestion() === -1) {
+          const gameState: GameStateJeuTermine = {};
+          game.setGameState(GameState.JeuTermine, gameState);
+          io.sockets.emit("gameStateChangeToJeuTermine", gameState);
+        } else {
+          callback(
+            "Veuillez stopper la question en cours avant de terminer la partie."
+          );
+        }
       } else {
-        callback(
-          "Veuillez stopper la question en cours avant de terminer la partie."
-        );
+        callback("Vous devez être admin pour effectuer cette opération.");
       }
     } else {
-      callback("Vous devez être admin pour effectuer cette opération.");
+      callback("Erreur d'authentification, veuillez rafraichir la page.");
     }
   });
 
   socket.on("adminResetGame", (callback) => {
     const player = game.getPlayer(socket.id);
-    if (player.isAdmin) {
-      const gameState: GameStateJeuPasEncoreCommence = {};
-      const timer = game.getTimer();
-      if (timer !== undefined) {
-        clearInterval(timer);
+    if (player !== undefined) {
+      if (player.isAdmin) {
+        const gameState: GameStateJeuPasEncoreCommence = {};
+        const timer = game.getTimer();
+        if (timer !== undefined) {
+          clearInterval(timer);
+        }
+        game.resetGame();
+        game.setGameState(GameState.JeuPasEncoreCommence, gameState);
+        io.sockets.emit("gameStateChangeToJeuPasEncoreCommence", gameState);
+      } else {
+        callback("Vous devez être admin pour effectuer cette opération.");
       }
-      game.resetGame();
-      game.setGameState(GameState.JeuPasEncoreCommence, gameState);
-      io.sockets.emit("gameStateChangeToJeuPasEncoreCommence", gameState);
     } else {
-      callback("Vous devez être admin pour effectuer cette opération.");
+      callback("Erreur d'authentification, veuillez rafraichir la page.");
     }
   });
 
@@ -191,22 +209,24 @@ io.on("connection", (socket) => {
   });
 
   socket.on("answerQuestion", (questionIndex, answers, callback) => {
-    // On vérifie que le joueur répond à une question toujours en cours
-    if (game.getCurrentIndexQuestion() === questionIndex) {
-      // On vérifie que le joueur n'a pas déjà répondu à la question
-      if (!game.hasAlreadyAnswered(socket.id, questionIndex)) {
-        // Si la question a des réponses possibles, on lui ajoute 1 point
-        if (
-          game.getBonnesReponses(questionIndex).length > 0 &&
-          game.isAnswersCorrect(questionIndex, answers)
-        ) {
-          game.addPoint(socket.id);
+    if (game.getPlayer(socket.id) !== undefined) {
+      // On vérifie que le joueur répond à une question toujours en cours
+      if (game.getCurrentIndexQuestion() === questionIndex) {
+        // On vérifie que le joueur n'a pas déjà répondu à la question
+        if (!game.hasAlreadyAnswered(socket.id, questionIndex)) {
+          // Si la question a des réponses possibles, on lui ajoute 1 point
+          if (
+            game.getBonnesReponses(questionIndex).length > 0 &&
+            game.isAnswersCorrect(questionIndex, answers)
+          ) {
+            game.addPoint(socket.id);
+          }
+        } else {
+          callback("Vous avez déjà répondu à cette question");
         }
       } else {
-        callback("Vous avez déjà répondu à cette question");
+        callback("La question n'est pas/plus en cours");
       }
-    } else {
-      callback("La question n'est pas/plus en cours");
     }
   });
 });
