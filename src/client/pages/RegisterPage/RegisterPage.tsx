@@ -26,7 +26,13 @@ export function RegisterPage({
         </h1>
         <div className="registerPage__center__barre"></div>
         <h3 className="subtitle">Séance 3</h3>
-        <div className="registerPage__center__pseudo">
+        <form
+          className="registerPage__center__pseudo"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleRegister(pseudo);
+          }}
+        >
           <label
             htmlFor="pseudo"
             className="registerPage__center__pseudo__label"
@@ -41,18 +47,8 @@ export function RegisterPage({
             value={pseudo}
             onChange={(event) => setPseudo(event.target.value)}
           />
-        </div>
+        </form>
       </div>
-      {/* <label htmlFor="pseudo">Pseudo : </label>
-      <input
-        type="text"
-        name="pseudo"
-        id="pseudo"
-        value={pseudo}
-        onChange={(event) => setPseudo(event.target.value)}
-      />
-      <button onClick={() => handleRegister(pseudo)}>S'inscrire</button>
-      <button onClick={handleReconnect}>Se reconnecter</button> */}
     </div>
   );
 }
