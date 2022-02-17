@@ -1,0 +1,69 @@
+.adminPage {
+  background-color: white;
+  color: black;
+  height: 100%;
+  overflow-x: hidden;
+
+  h1 {
+    background: linear-gradient(to right, orange, yellow);
+    text-align: center;
+  }
+
+  li {
+    list-style: none;
+  }
+
+  #refs {
+    margin-left: 10px;
+    font-size: large;
+  }
+
+  p > button {
+    text-align: center;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    color: white;
+  }
+
+  p {
+    font-style: italic;
+    font-size: medium;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+  }
+
+  br + button {
+    background-color: green;
+    border-radius: 90px;
+    // width: 10%;
+    margin-top: 5px;
+    color: white;
+  }
+
+  .fin {
+    background-color: green;
+    border-radius: 90px;
+    width: 10%;
+    color: white;
+  }
+
+  button + button {
+    background-color: red;
+    color: black;
+    border-radius: 90px;
+    // width: 10%;
+    color: white;
+  }
+
+  footer {
+    bottom: 0;
+    width: 100%;
+    padding-top: 50px;
+    height: 50px;
+    margin-left: 20px;
+  }
+
+  footer > button {
+    padding-top: 2px;
+    padding-bottom: 2px;
+  }
+}

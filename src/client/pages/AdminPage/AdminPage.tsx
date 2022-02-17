@@ -8,6 +8,8 @@ import {
   Question,
 } from "core/interfaces/GameInterfaces";
 
+import "./AdminPage.scss";
+
 type AdminPageProps = {
   gameState: GameState;
   gameStateData:
@@ -70,12 +72,14 @@ export class AdminPage extends React.Component<AdminPageProps, AdminPageState> {
     }
 
     return (
-      <div>
+      <div className="adminPage">
         <h1>Page d'administration</h1>
-        <p>
-          État de la partie : <b>{etatPartie}</b>
-        </p>
-        <h3>Questions :</h3>
+        <div id="refs">
+          <p>
+            État de la partie : <b>{etatPartie}</b>
+          </p>
+          <h3>Questions :</h3>
+        </div>
         <ul>
           {questions.map((question, i) => {
             const isCurrentQuestion =
@@ -87,36 +91,41 @@ export class AdminPage extends React.Component<AdminPageProps, AdminPageState> {
             const stopButtonDisabled = !isCurrentQuestion;
 
             return (
-              <li key={i}>
-                <p>
-                  {i + 1}) {question.question}
-                  <br />
-                  <button
-                    onClick={() => this.props.handleStartQuestion(i)}
-                    disabled={startButtonDisabled}
-                  >
-                    Démarrer
-                  </button>{" "}
-                  <button
-                    onClick={() => this.props.handleStopQuestion(i)}
-                    disabled={stopButtonDisabled}
-                  >
-                    Stopper
-                  </button>{" "}
-                  {isCurrentQuestion && this.props.timer !== -1
-                    ? this.props.timer + "s"
-                    : null}
-                </p>
-              </li>
+              <>
+                <li key={i}>
+                  <p>
+                    {i + 1}
+                    {")"} {question.question}
+                    <br />
+                    <button
+                      onClick={() => this.props.handleStartQuestion(i)}
+                      disabled={startButtonDisabled}
+                    >
+                      Démarrer
+                    </button>{" "}
+                    <button
+                      onClick={() => this.props.handleStopQuestion(i)}
+                      disabled={stopButtonDisabled}
+                    >
+                      Stopper
+                    </button>{" "}
+                    {isCurrentQuestion && this.props.timer !== -1
+                      ? this.props.timer + "s"
+                      : null}
+                  </p>
+                </li>
+              </>
             );
           })}
         </ul>
-        <button onClick={this.props.handleFinishGame}>
-          Terminer la partie
-        </button>{" "}
-        <button onClick={this.props.handleResetGame}>
-          Réinitialiser la partie
-        </button>
+        <footer>
+          <button onClick={this.props.handleFinishGame}>
+            Terminer la partie
+          </button>{" "}
+          <button onClick={this.props.handleResetGame}>
+            Réinitialiser la partie
+          </button>
+        </footer>
       </div>
     );
   }
