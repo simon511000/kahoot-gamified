@@ -3,6 +3,11 @@ import * as React from "react";
 
 type QuestionCommencePageProps = {
   gameStateData: GameStateQuestionCommence;
+  timer: number;
+  handleAnswerQuestion: (
+    questionIndex: number,
+    answers: number[] | string
+  ) => Promise<boolean>;
 };
 type QuestionCommencePageState = {};
 export class QuestionCommencePage extends React.Component<
@@ -10,6 +15,15 @@ export class QuestionCommencePage extends React.Component<
   QuestionCommencePageState
 > {
   render(): React.ReactNode {
-    return <p>La question a commencé</p>;
+    const { question, questionIndex } = this.props.gameStateData;
+
+    return (
+      <div>
+        <h3>
+          {questionIndex + 1}) {question.question}{" "}
+          {this.props.timer !== -1 ? this.props.timer + "s" : null}
+        </h3>
+      </div>
+    );
   }
 }

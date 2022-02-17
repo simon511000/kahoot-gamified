@@ -108,7 +108,8 @@ io.on("connection", (socket) => {
               // Quand le timer est terminé, on termine la question
               if (tempsRestant === -1) {
                 const gameStateData: GameStateQuestionTermine = {
-                  bonnesReponses: game.getBonnesReponses(questionIndex),
+                  questionIndex,
+                  question: game.getQuestions()[questionIndex],
                 };
                 game.setGameState(GameState.QuestionTermine, gameStateData);
                 io.sockets.emit(
@@ -141,7 +142,8 @@ io.on("connection", (socket) => {
         // Si la question n'est pas déjà en cours, il est inutile de la stopper
         if (game.getCurrentIndexQuestion() === questionIndex) {
           const gameStateData: GameStateQuestionTermine = {
-            bonnesReponses: game.getBonnesReponses(questionIndex),
+            questionIndex,
+            question: game.getQuestions()[questionIndex],
           };
           game.setGameState(GameState.QuestionTermine, gameStateData);
           const timer = game.getTimer();
@@ -217,6 +219,7 @@ io.on("connection", (socket) => {
           // Si la question a des réponses possibles, on lui ajoute 1 point
           if (
             game.getBonnesReponses(questionIndex).length > 0 &&
+            Array.isArray(answers) &&
             game.isAnswersCorrect(questionIndex, answers)
           ) {
             game.addPoint(socket.id);
@@ -227,6 +230,8 @@ io.on("connection", (socket) => {
       } else {
         callback("La question n'est pas/plus en cours");
       }
+    } else {
+      callback("Erreur d'authentification, veuillez rafraichir la page.");
     }
   });
 });

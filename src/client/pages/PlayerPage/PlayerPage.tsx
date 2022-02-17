@@ -19,6 +19,10 @@ type PlayerPageProps = {
     | GameStateQuestionTermine
     | GameStateJeuTermine;
   timer: number;
+  handleAnswerQuestion: (
+    questionIndex: number,
+    answers: number[] | string
+  ) => Promise<boolean>;
 };
 type PlayerPageState = {};
 export class PlayerPage extends React.Component<
@@ -48,6 +52,8 @@ export class PlayerPage extends React.Component<
             gameStateData={
               this.props.gameStateData as GameStateQuestionCommence
             }
+            timer={this.props.timer}
+            handleAnswerQuestion={this.props.handleAnswerQuestion}
           />
         );
         break;

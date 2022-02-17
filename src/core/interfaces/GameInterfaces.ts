@@ -33,10 +33,11 @@ export enum GameState {
 export interface GameStateJeuPasEncoreCommence {}
 export interface GameStateQuestionCommence {
   questionIndex: number;
-  question: Question;
+  question: Question; // L'objet Question dépourvu des bonnes réponses
 }
 export interface GameStateQuestionTermine {
-  bonnesReponses: number[];
+  questionIndex: number;
+  question: Question;
 }
 export interface GameStateJeuTermine {}
 

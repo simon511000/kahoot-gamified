@@ -1,0 +1,54 @@
+.registerPage {
+  position: relative;
+  padding: 2rem;
+  height: 100%;
+  width: 100%;
+
+  &__names {
+    color: #b4cfe7;
+    line-height: 0.25rem;
+  }
+
+  &__center {
+    width: 100%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    text-align: center;
+
+    &__title {
+      font-size: 1.5rem;
+      margin: 0.5rem;
+    }
+
+    &__barre {
+      margin: 1.2rem auto 0 auto;
+      background-color: #233dff;
+      width: 55%;
+      height: 0.3rem;
+      transform: rotate(-6deg) skew(-6deg);
+    }
+
+    &__pseudo {
+      font-size: 1rem;
+
+      &__label {
+        display: inline-block;
+        height: inherit;
+        background-color: #5cb6f9;
+        color: white;
+        padding: 10px 15px;
+        font-size: inherit;
+      }
+      &__input {
+        background-color: #0d186a;
+        border: 0px solid transparent;
+        border-radius: 0;
+        color: white;
+        padding: 10px 15px;
+        font-size: inherit;
+      }
+    }
+  }
+}

@@ -49,7 +49,7 @@ export interface ClientToServerEvents {
   /****** PLAYER ******/
   answerQuestion: (
     questionIndex: number,
-    answers: number[],
+    answers: number[] | string,
     callback: (error: false | string) => void
   ) => void;
   getGameState: (

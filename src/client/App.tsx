@@ -21,6 +21,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { AdminPage } from "./pages/AdminPage/AdminPage";
 import { PlayerPage } from "./pages/PlayerPage/PlayerPage";
 
+import "./App.scss";
+
 const ENDPOINT = "ws://127.0.0.1:3001";
 
 type AppProps = {};
@@ -62,6 +64,8 @@ export class App extends React.Component<AppProps, AppState> {
     this.handleAdminStopQuestion = this.handleAdminStopQuestion.bind(this);
     this.handleAdminFinishGame = this.handleAdminFinishGame.bind(this);
     this.handleAdminResetGame = this.handleAdminResetGame.bind(this);
+    this.handlePlayerAnswerQuestion =
+      this.handlePlayerAnswerQuestion.bind(this);
   }
 
   componentDidMount() {
@@ -250,9 +254,28 @@ export class App extends React.Component<AppProps, AppState> {
     });
   }
 
+  /**
+   * @returns true si bien pris en compte, false si erreur
+   */
+  async handlePlayerAnswerQuestion(
+    questionIndex: number,
+    answers: number[] | string
+  ): Promise<boolean> {
+    return await new Promise((resolve: (isOk: boolean) => void) => {
+      this.socket.emit("answerQuestion", questionIndex, answers, (error) => {
+        if (error !== false) {
+          this.notify(error, "error");
+          resolve(false);
+        } else {
+          resolve(true);
+        }
+      });
+    });
+  }
+
   render(): React.ReactNode {
     return (
-      <div>
+      <>
         {this.state.isLogged ? (
           this.state.player!.isAdmin ? (
             <AdminPage
@@ -270,6 +293,7 @@ export class App extends React.Component<AppProps, AppState> {
               gameState={this.state.gameState}
               gameStateData={this.state.gameStateData}
               timer={this.state.timer}
+              handleAnswerQuestion={this.handlePlayerAnswerQuestion}
             />
           )
         ) : (
@@ -279,7 +303,7 @@ export class App extends React.Component<AppProps, AppState> {
           />
         )}
         <ToastContainer />
-      </div>
+      </>
     );
   }
 }
