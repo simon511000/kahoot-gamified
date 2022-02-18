@@ -18,7 +18,7 @@ export enum QuestionType {
 export interface Question {
   type: QuestionType;
   question: string;
-  reponsesPossibles?: string[]; // null si question ouverte
+  reponsesPossibles: string[]; // null si question ouverte
   bonnesReponses: number[];
   temps: number; // temps en seconde (0 si manuel)
 }

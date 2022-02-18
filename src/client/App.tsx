@@ -266,6 +266,7 @@ export class App extends React.Component<AppProps, AppState> {
   ): Promise<boolean> {
     return await new Promise((resolve: (isOk: boolean) => void) => {
       this.socket.emit("answerQuestion", questionIndex, answers, (error) => {
+        console.log(error);
         if (error !== false) {
           this.notify(error, "error");
           resolve(false);

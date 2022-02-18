@@ -242,8 +242,11 @@ io.on("connection", (socket) => {
             Array.isArray(answers) &&
             game.isAnswersCorrect(questionIndex, answers)
           ) {
+            game.addAnswered(socket.id, questionIndex);
             game.addPoint(socket.id);
+            console.log("points : ", game.getPlayer(socket.id)!.points);
           }
+          callback(false);
         } else {
           callback("Vous avez déjà répondu à cette question");
         }

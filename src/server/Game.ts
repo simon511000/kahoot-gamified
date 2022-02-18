@@ -145,6 +145,11 @@ export class GameManager {
     player!.points++;
   }
 
+  addAnswered(playerId: string, questionIndex: number): void {
+    const player = this.getPlayer(playerId);
+    player!.questionsRepondues.push(questionIndex);
+  }
+
   resetGame(): void {
     this.game = { ...initialGame };
   }

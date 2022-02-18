@@ -1,3 +1,4 @@
+import { TestGame } from "client/Games/TestGame/TestGame";
 import { GameStateQuestionCommence } from "core/interfaces/GameInterfaces";
 import * as React from "react";
 
@@ -23,6 +24,10 @@ export class QuestionCommenceApresPage extends React.Component<
           {questionIndex + 1}) {question.question}{" "}
           {this.props.timer !== -1 ? this.props.timer + "s" : null}
         </h3>
+        <TestGame
+          gameStateData={this.props.gameStateData}
+          handleAnswerQuestion={this.props.handleAnswerQuestion}
+        />
       </div>
     );
   }

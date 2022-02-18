@@ -116,7 +116,7 @@ export class AdminPage extends React.Component<AdminPageProps, AdminPageState> {
                   >
                     Stopper
                   </button>{" "}
-                  {isCurrentQuestion && this.props.timer !== -1
+                  {isCurrentQuestion && this.props.timer !== 0
                     ? this.props.timer + "s"
                     : null}
                 </p>

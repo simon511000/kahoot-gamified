@@ -1,3 +1,4 @@
+import { Title } from "client/components/Title/Title";
 import {
   GameState,
   GameStateJeuPasEncoreCommence,
@@ -89,11 +90,6 @@ export class PlayerPage extends React.Component<
   }
 
   render(): React.ReactNode {
-    return (
-      <div>
-        <h1>Page de l'utilisateur</h1>
-        {this.renderPage()}
-      </div>
-    );
+    return <>{this.renderPage()}</>;
   }
 }

@@ -13,6 +13,7 @@ export const initialGame: Game = {
       // 1er débat
       type: QuestionType.Ouverte,
       question: "1er débat", // TODO: à compéter
+      reponsesPossibles: [],
       bonnesReponses: [],
       temps: 0,
     },
@@ -76,6 +77,7 @@ export const initialGame: Game = {
     {
       // Débat 2
       type: QuestionType.Ouverte,
+      reponsesPossibles: [],
       question:
         "En tant que maire, quels seraient vos arguments pour accepter ou refuser les repas de substitution ?",
       bonnesReponses: [],

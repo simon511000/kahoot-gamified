@@ -1,5 +1,8 @@
+import { Title } from "client/components/Title/Title";
 import { GameStateQuestionCommence } from "core/interfaces/GameInterfaces";
 import * as React from "react";
+
+import "./QuestionCommenceAvant.scss";
 
 type QuestionCommenceAvantPageProps = {
   gameStateData: GameStateQuestionCommence;
@@ -18,11 +21,10 @@ export class QuestionCommenceAvantPage extends React.Component<
     const { question, questionIndex } = this.props.gameStateData;
 
     return (
-      <div>
-        <h3>
-          {questionIndex + 1}) {question.question}{" "}
-          {this.props.timer !== -1 ? this.props.timer + "s" : null}
-        </h3>
+      <div className="questionCommenceAvantPage">
+        <Title />
+        <h3 className="title">{question.question}</h3>
+        <h4 className="subTitle">En restauration scolaire</h4>
       </div>
     );
   }
