@@ -1,6 +1,11 @@
+import { BurgerGame } from "client/Games/BurgerGame/BurgerGame";
 import { TestGame } from "client/Games/TestGame/TestGame";
-import { GameStateQuestionCommence } from "core/interfaces/GameInterfaces";
+import {
+  GameStateQuestionCommence,
+  QuestionType,
+} from "core/interfaces/GameInterfaces";
 import * as React from "react";
+import { TypeOptions } from "react-toastify";
 
 type QuestionCommenceApresPageProps = {
   gameStateData: GameStateQuestionCommence;
@@ -9,26 +14,43 @@ type QuestionCommenceApresPageProps = {
     questionIndex: number,
     answers: number[] | string
   ) => Promise<boolean>;
+  notify: (message: string, type?: TypeOptions) => void;
 };
 type QuestionCommenceApresPageState = {};
 export class QuestionCommenceApresPage extends React.Component<
   QuestionCommenceApresPageProps,
   QuestionCommenceApresPageState
 > {
+  renderGame(): React.ReactNode {
+    let game;
+
+    switch (this.props.gameStateData.question.type) {
+      case QuestionType.Burger:
+        game = (
+          <BurgerGame
+            gameStateData={this.props.gameStateData}
+            handleAnswerQuestion={this.props.handleAnswerQuestion}
+            notify={this.props.notify}
+          />
+        );
+        break;
+
+      default:
+        game = (
+          <TestGame
+            gameStateData={this.props.gameStateData}
+            handleAnswerQuestion={this.props.handleAnswerQuestion}
+          />
+        );
+        break;
+    }
+
+    return game;
+  }
+
   render(): React.ReactNode {
     const { question, questionIndex } = this.props.gameStateData;
 
-    return (
-      <div>
-        <h3>
-          {questionIndex + 1}) {question.question}{" "}
-          {this.props.timer !== -1 ? this.props.timer + "s" : null}
-        </h3>
-        <TestGame
-          gameStateData={this.props.gameStateData}
-          handleAnswerQuestion={this.props.handleAnswerQuestion}
-        />
-      </div>
-    );
+    return <div>{this.renderGame()}</div>;
   }
 }

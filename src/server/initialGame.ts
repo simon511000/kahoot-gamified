@@ -57,7 +57,7 @@ export const initialGame: Game = {
         "Quels sont les principes que doivent respecter les autorités en charge d’un service public ?",
       reponsesPossibles: ["Égalité", "Accessibilité", "Rapidité", "Continuité"],
       bonnesReponses: [0, 1, 3],
-      temps: 30,
+      temps: 0,
     },
     {
       // QCM 5

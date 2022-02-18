@@ -1,0 +1,63 @@
+.burger-game {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  #buttons-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+
+  #burger-container {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+    margin: 20px auto;
+    padding: 8px;
+  }
+
+  .btn {
+    background: none;
+    background-color: #1d6ac2;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    outline: none;
+    padding: 4px 8px;
+  }
+
+  .btn-done {
+    background-color: green;
+  }
+
+  .btn-delete {
+    background-color: #d2691e;
+  }
+
+  .garniture {
+    margin: 0 auto;
+  }
+
+  .bun {
+    margin: 0 auto;
+    height: 35px;
+    width: 180px;
+    background-color: #deb887;
+  }
+
+  .cushined {
+    margin: 1px auto;
+    margin: 20px 0;
+  }
+
+  .flattened {
+    margin: 0;
+    transition: margin 0.5s;
+  }
+}

@@ -7,6 +7,7 @@ import {
   GameStateQuestionTermine,
 } from "core/interfaces/GameInterfaces";
 import * as React from "react";
+import { TypeOptions } from "react-toastify";
 import { JeuPasEncoreCommencePage } from "./JeuPasEncoreCommencePage/JeuPasEncoreCommence";
 import { JeuTerminePage } from "./JeuTerminePage/JeuTermine";
 import { QuestionCommenceApresPage } from "./QuestionCommenceApresPage/QuestionCommenceApres";
@@ -25,6 +26,7 @@ type PlayerPageProps = {
     questionIndex: number,
     answers: number[] | string
   ) => Promise<boolean>;
+  notify: (message: string, type?: TypeOptions) => void;
 };
 type PlayerPageState = {};
 export class PlayerPage extends React.Component<
@@ -67,6 +69,7 @@ export class PlayerPage extends React.Component<
             }
             timer={this.props.timer}
             handleAnswerQuestion={this.props.handleAnswerQuestion}
+            notify={this.props.notify}
           />
         );
         break;

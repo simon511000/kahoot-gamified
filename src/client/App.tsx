@@ -23,7 +23,7 @@ import { PlayerPage } from "./pages/PlayerPage/PlayerPage";
 
 import "./App.scss";
 
-const ENDPOINT = "ws://127.0.0.1:3001";
+const ENDPOINT = "ws://192.168.1.36:3001";
 
 type AppProps = {};
 type AppState = {
@@ -298,6 +298,7 @@ export class App extends React.Component<AppProps, AppState> {
               gameStateData={this.state.gameStateData}
               timer={this.state.timer}
               handleAnswerQuestion={this.handlePlayerAnswerQuestion}
+              notify={this.notify}
             />
           )
         ) : (
