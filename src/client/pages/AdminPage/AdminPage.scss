@@ -54,6 +54,10 @@
     color: white;
   }
 
+  button:disabled {
+    background-color: gray;
+  }
+
   footer {
     bottom: 0;
     width: 100%;

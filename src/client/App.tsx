@@ -58,7 +58,6 @@ export class App extends React.Component<AppProps, AppState> {
     };
 
     this.handleRegister = this.handleRegister.bind(this);
-    this.handleReconnect = this.handleReconnect.bind(this);
     this.adminGetQuestions = this.adminGetQuestions.bind(this);
     this.handleAdminStartQuestion = this.handleAdminStartQuestion.bind(this);
     this.handleAdminStopQuestion = this.handleAdminStopQuestion.bind(this);
@@ -129,34 +128,16 @@ export class App extends React.Component<AppProps, AppState> {
 
   async handleRegister(pseudo: string): Promise<boolean> {
     const isLogged = await new Promise((resolve: (value: boolean) => void) =>
-      this.socket.emit("register", pseudo, (error, player) => {
-        if (error === false) {
-          this.onLogin(player!);
-          this.cookies.set("playerToken", player!.token, { path: "/" });
-          this.notify(
-            `YEY! Tu t'es bien connecté au nom de ${player!.pseudo}`,
-            "success"
-          );
-          resolve(true);
-        } else {
-          this.notify(error, "error");
-          resolve(false);
-        }
-      })
-    );
-    return isLogged;
-  }
-
-  async handleReconnect(): Promise<boolean> {
-    const isLogged = await new Promise((resolve: (value: boolean) => void) =>
       this.socket.emit(
-        "reconnect",
+        "register",
+        pseudo,
         this.cookies.get("playerToken") || "",
         (error, player) => {
           if (error === false) {
             this.onLogin(player!);
+            this.cookies.set("playerToken", player!.token, { path: "/" });
             this.notify(
-              `YEY! Tu t'es bien reconnecté au nom de ${player!.pseudo}`,
+              `YEY! Tu t'es bien connecté au nom de ${player!.pseudo}`,
               "success"
             );
             resolve(true);
@@ -297,10 +278,7 @@ export class App extends React.Component<AppProps, AppState> {
             />
           )
         ) : (
-          <RegisterPage
-            handleRegister={this.handleRegister}
-            handleReconnect={this.handleReconnect}
-          />
+          <RegisterPage handleRegister={this.handleRegister} />
         )}
         <ToastContainer />
       </>

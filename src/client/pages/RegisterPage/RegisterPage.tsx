@@ -5,12 +5,8 @@ import "./RegisterPage.scss";
 
 type RegisterPageProps = {
   handleRegister: (pseudo: string) => Promise<boolean>;
-  handleReconnect: () => Promise<boolean>;
 };
-export function RegisterPage({
-  handleRegister,
-  handleReconnect,
-}: RegisterPageProps) {
+export function RegisterPage({ handleRegister }: RegisterPageProps) {
   const [pseudo, setPseudo] = useState("");
 
   return (

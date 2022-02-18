@@ -25,9 +25,6 @@ export interface ServerToClientEvents {
 export interface ClientToServerEvents {
   register: (
     pseudo: string,
-    callback: (error: false | string, player?: Player) => void
-  ) => void;
-  reconnect: (
     token: string,
     callback: (error: false | string, player?: Player) => void
   ) => void;

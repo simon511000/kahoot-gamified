@@ -32,13 +32,13 @@ const io = new Server<
 const game: GameManager = new GameManager();
 
 io.on("connection", (socket) => {
-  socket.on("register", (pseudo, callback) => {
-    const token =
+  socket.on("register", (pseudo, token, callback) => {
+    const newToken =
       new Date().getTime().toString(36) + Math.random().toString(36).slice(2); // source : https://stackoverflow.com/questions/23327010/how-to-generate-unique-id-with-node-js
 
     const player: Player = {
       playerId: socket.id,
-      token,
+      token: newToken,
       isAdmin: game.isAdmin(pseudo),
       pseudo,
       points: 0,
@@ -47,21 +47,12 @@ io.on("connection", (socket) => {
 
     const isPlayerAdded = game.addPlayer(player);
 
-    if (isPlayerAdded) {
-      callback(false, player);
-    } else {
+    if (!isPlayerAdded && !game.reconnectWithToken(token, socket.id)) {
       callback(
         "Ce pseudo a déjà été utilisé, changez de pseudo ou appuyez sur 'se reconnecter'"
       );
-    }
-  });
-
-  socket.on("reconnect", (token, callback) => {
-    const reconnected = game.reconnectWithToken(token, socket.id);
-    if (reconnected !== false && reconnected !== true) {
-      callback(false, reconnected);
     } else {
-      callback("Impossible de se reconnecter, merci de vous (ré)inscrire");
+      callback(false, player);
     }
   });
 
