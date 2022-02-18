@@ -29,6 +29,7 @@ const io = new Server<
   },
 });
 
+const delayQuestion = 10;
 const game: GameManager = new GameManager();
 
 io.on("connection", (socket) => {
@@ -86,28 +87,56 @@ io.on("connection", (socket) => {
               bonnesReponses: [],
             },
           };
-          game.setGameState(GameState.QuestionCommence, gameStateData);
+          game.setGameState(GameState.QuestionCommenceAvant, gameStateData);
           // On envoie la question sans divulger les bonnes réponses
-          io.sockets.emit("gameStateChangeToQuestionCommence", gameStateData);
+          io.sockets.emit(
+            "gameStateChangeToQuestionCommenceAvant",
+            gameStateData
+          );
 
-          // On broadcast le timer
-          let tempsRestant = question.temps;
-          if (tempsRestant > 0) {
+          // On attend le délais
+          let tempsRestantDelais = delayQuestion;
+          if (tempsRestantDelais > 0) {
             const timerTick = () => {
-              io.sockets.emit("timer", tempsRestant);
-              tempsRestant--;
-              // Quand le timer est terminé, on termine la question
-              if (tempsRestant === -1) {
-                const gameStateData: GameStateQuestionTermine = {
-                  questionIndex,
-                  question: game.getQuestions()[questionIndex],
-                };
-                game.setGameState(GameState.QuestionTermine, gameStateData);
-                io.sockets.emit(
-                  "gameStateChangeToQuestionTermine",
+              io.sockets.emit("timer", tempsRestantDelais);
+              tempsRestantDelais--;
+              // Quand le délais est terminé, on démarre la question
+              if (tempsRestantDelais === -1) {
+                clearInterval(game.getTimer()!);
+                game.setGameState(
+                  GameState.QuestionCommenceApres,
                   gameStateData
                 );
-                clearInterval(game.getTimer()!);
+                // On envoie la question sans divulger les bonnes réponses
+                io.sockets.emit(
+                  "gameStateChangeToQuestionCommenceApres",
+                  gameStateData
+                );
+                let tempsRestantQuestion = question.temps;
+                if (tempsRestantQuestion > 0) {
+                  const timerTick = () => {
+                    io.sockets.emit("timer", tempsRestantQuestion);
+                    tempsRestantQuestion--;
+                    // Quand le timer est terminé, on termine la question
+                    if (tempsRestantQuestion === -1) {
+                      const gameStateData: GameStateQuestionTermine = {
+                        questionIndex,
+                        question: game.getQuestions()[questionIndex],
+                      };
+                      game.setGameState(
+                        GameState.QuestionTermine,
+                        gameStateData
+                      );
+                      io.sockets.emit(
+                        "gameStateChangeToQuestionTermine",
+                        gameStateData
+                      );
+                      clearInterval(game.getTimer()!);
+                    }
+                  };
+                  timerTick();
+                  game.setTimer(setInterval(timerTick, 1000));
+                }
               }
             };
             timerTick();

@@ -8,7 +8,8 @@ import {
 import * as React from "react";
 import { JeuPasEncoreCommencePage } from "./JeuPasEncoreCommencePage/JeuPasEncoreCommence";
 import { JeuTerminePage } from "./JeuTerminePage/JeuTermine";
-import { QuestionCommencePage } from "./QuestionCommencePage/QuestionCommence";
+import { QuestionCommenceApresPage } from "./QuestionCommenceApresPage/QuestionCommenceApres";
+import { QuestionCommenceAvantPage } from "./QuestionCommenceAvantPage/QuestionCommenceAvant";
 import { QuestionTerminePage } from "./QuestionTerminePage/QuestionTermine";
 
 type PlayerPageProps = {
@@ -46,9 +47,20 @@ export class PlayerPage extends React.Component<
           />
         );
         break;
-      case GameState.QuestionCommence:
+      case GameState.QuestionCommenceAvant:
         page = (
-          <QuestionCommencePage
+          <QuestionCommenceAvantPage
+            gameStateData={
+              this.props.gameStateData as GameStateQuestionCommence
+            }
+            timer={this.props.timer}
+            handleAnswerQuestion={this.props.handleAnswerQuestion}
+          />
+        );
+        break;
+      case GameState.QuestionCommenceApres:
+        page = (
+          <QuestionCommenceApresPage
             gameStateData={
               this.props.gameStateData as GameStateQuestionCommence
             }

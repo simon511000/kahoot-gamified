@@ -67,7 +67,8 @@ export class GameManager {
   }
 
   getCurrentIndexQuestion(): number {
-    return this.game.gameState == GameState.QuestionCommence
+    return this.game.gameState === GameState.QuestionCommenceAvant ||
+      this.game.gameState === GameState.QuestionCommenceApres
       ? (<GameStateQuestionCommence>this.game.gameStateData).questionIndex
       : -1;
   }

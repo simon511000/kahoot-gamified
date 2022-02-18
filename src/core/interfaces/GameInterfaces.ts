@@ -25,7 +25,8 @@ export interface Question {
 
 export enum GameState {
   JeuPasEncoreCommence,
-  QuestionCommence,
+  QuestionCommenceAvant,
+  QuestionCommenceApres,
   QuestionTermine,
   JeuTermine,
 }

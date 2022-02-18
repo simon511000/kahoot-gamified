@@ -80,10 +80,32 @@ export class App extends React.Component<AppProps, AppState> {
       this.handleGameStateChange(GameState.JeuPasEncoreCommence, gameStateData);
       console.log("GameState modifié en PasEncoreCommence", gameStateData);
     });
-    this.socket.on("gameStateChangeToQuestionCommence", (gameStateData) => {
-      this.handleGameStateChange(GameState.QuestionCommence, gameStateData);
-      console.log("GameState modifié en QuestionCommence", gameStateData);
-    });
+    this.socket.on(
+      "gameStateChangeToQuestionCommenceAvant",
+      (gameStateData) => {
+        this.handleGameStateChange(
+          GameState.QuestionCommenceAvant,
+          gameStateData
+        );
+        console.log(
+          "GameState modifié en QuestionCommenceAvant",
+          gameStateData
+        );
+      }
+    );
+    this.socket.on(
+      "gameStateChangeToQuestionCommenceApres",
+      (gameStateData) => {
+        this.handleGameStateChange(
+          GameState.QuestionCommenceApres,
+          gameStateData
+        );
+        console.log(
+          "GameState modifié en QuestionCommenceApres",
+          gameStateData
+        );
+      }
+    );
     this.socket.on("gameStateChangeToQuestionTermine", (gameStateData) => {
       this.handleGameStateChange(GameState.QuestionTermine, gameStateData);
       this.setState({ timer: -1 });

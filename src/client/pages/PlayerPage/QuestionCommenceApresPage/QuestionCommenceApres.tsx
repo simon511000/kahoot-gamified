@@ -1,7 +1,7 @@
 import { GameStateQuestionCommence } from "core/interfaces/GameInterfaces";
 import * as React from "react";
 
-type QuestionCommencePageProps = {
+type QuestionCommenceApresPageProps = {
   gameStateData: GameStateQuestionCommence;
   timer: number;
   handleAnswerQuestion: (
@@ -9,10 +9,10 @@ type QuestionCommencePageProps = {
     answers: number[] | string
   ) => Promise<boolean>;
 };
-type QuestionCommencePageState = {};
-export class QuestionCommencePage extends React.Component<
-  QuestionCommencePageProps,
-  QuestionCommencePageState
+type QuestionCommenceApresPageState = {};
+export class QuestionCommenceApresPage extends React.Component<
+  QuestionCommenceApresPageProps,
+  QuestionCommenceApresPageState
 > {
   render(): React.ReactNode {
     const { question, questionIndex } = this.props.gameStateData;

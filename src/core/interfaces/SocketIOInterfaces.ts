@@ -12,7 +12,10 @@ export interface ServerToClientEvents {
   gameStateChangeToJeuPasEncoreCommence: (
     gameStateData: GameStateJeuPasEncoreCommence
   ) => void;
-  gameStateChangeToQuestionCommence: (
+  gameStateChangeToQuestionCommenceAvant: (
+    gameStateData: GameStateQuestionCommence
+  ) => void;
+  gameStateChangeToQuestionCommenceApres: (
     gameStateData: GameStateQuestionCommence
   ) => void;
   gameStateChangeToQuestionTermine: (

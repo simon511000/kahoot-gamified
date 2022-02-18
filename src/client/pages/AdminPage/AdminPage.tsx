@@ -57,7 +57,13 @@ export class AdminPage extends React.Component<AdminPageProps, AdminPageState> {
       case GameState.JeuPasEncoreCommence:
         etatPartie = "Pas encore commencée";
         break;
-      case GameState.QuestionCommence:
+      case GameState.QuestionCommenceAvant:
+        etatPartie = `Question n°${
+          (this.props.gameStateData as GameStateQuestionCommence)
+            .questionIndex + 1
+        } démarre dans ${this.props.timer}s`;
+        break;
+      case GameState.QuestionCommenceApres:
         etatPartie = `Question n°${
           (this.props.gameStateData as GameStateQuestionCommence)
             .questionIndex + 1
@@ -83,38 +89,38 @@ export class AdminPage extends React.Component<AdminPageProps, AdminPageState> {
         <ul>
           {questions.map((question, i) => {
             const isCurrentQuestion =
-              this.props.gameState === GameState.QuestionCommence &&
+              (this.props.gameState === GameState.QuestionCommenceAvant ||
+                this.props.gameState === GameState.QuestionCommenceApres) &&
               (this.props.gameStateData as GameStateQuestionCommence)
                 .questionIndex === i;
             const startButtonDisabled =
-              this.props.gameState === GameState.QuestionCommence;
+              this.props.gameState === GameState.QuestionCommenceAvant ||
+              this.props.gameState === GameState.QuestionCommenceApres;
             const stopButtonDisabled = !isCurrentQuestion;
 
             return (
-              <>
-                <li key={i}>
-                  <p>
-                    {i + 1}
-                    {")"} {question.question}
-                    <br />
-                    <button
-                      onClick={() => this.props.handleStartQuestion(i)}
-                      disabled={startButtonDisabled}
-                    >
-                      Démarrer
-                    </button>{" "}
-                    <button
-                      onClick={() => this.props.handleStopQuestion(i)}
-                      disabled={stopButtonDisabled}
-                    >
-                      Stopper
-                    </button>{" "}
-                    {isCurrentQuestion && this.props.timer !== -1
-                      ? this.props.timer + "s"
-                      : null}
-                  </p>
-                </li>
-              </>
+              <li key={i}>
+                <p>
+                  {i + 1}
+                  {")"} {question.question}
+                  <br />
+                  <button
+                    onClick={() => this.props.handleStartQuestion(i)}
+                    disabled={startButtonDisabled}
+                  >
+                    Démarrer
+                  </button>{" "}
+                  <button
+                    onClick={() => this.props.handleStopQuestion(i)}
+                    disabled={stopButtonDisabled}
+                  >
+                    Stopper
+                  </button>{" "}
+                  {isCurrentQuestion && this.props.timer !== -1
+                    ? this.props.timer + "s"
+                    : null}
+                </p>
+              </li>
             );
           })}
         </ul>
