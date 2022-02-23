@@ -1,5 +1,8 @@
 import * as React from "react";
-import { GameStateQuestionCommence } from "core/interfaces/GameInterfaces";
+import {
+  GameStateQuestionCommence,
+  QuestionType,
+} from "core/interfaces/GameInterfaces";
 
 import "./burger.scss";
 import { TypeOptions } from "react-toastify";
@@ -12,12 +15,12 @@ const salade = require("./assets/salade.png");
 const painHaut = require("./assets/pain-haut.png");
 
 enum GarnitureType {
-  PainBas,
-  Steak,
-  Fromage,
-  Tomate,
-  Salade,
-  PainHaut,
+  PainBas = -1,
+  Steak = 0,
+  Fromage = 1,
+  Tomate = 2,
+  Salade = 3,
+  PainHaut = -2,
 }
 
 type BurgerGameProps = {
@@ -27,6 +30,7 @@ type BurgerGameProps = {
     answers: number[] | string
   ) => Promise<boolean>;
   notify: (message: string, type?: TypeOptions) => void;
+  timer: number;
 };
 type BurgerGameState = {
   garnitures: GarnitureType[];
@@ -41,11 +45,15 @@ export class BurgerGame extends React.Component<
 
     this.handleAddGarniture = this.handleAddGarniture.bind(this);
     this.handleReset = this.handleReset.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
   }
 
   handleAddGarniture(type: GarnitureType): void {
-    const { notify } = this.props;
+    const { notify, gameStateData } = this.props;
     const garnitures = this.state.garnitures.slice();
+    const nbVraiGarnitures = garnitures.flatMap((t) =>
+      t === GarnitureType.PainBas || t === GarnitureType.PainHaut ? [] : [t]
+    ).length;
     // Si la garniture n'a pas déjà été placé
     if (!garnitures.includes(type)) {
       // Si le joueur essaye de placer une garniture sans pain du bas
@@ -55,11 +63,28 @@ export class BurgerGame extends React.Component<
       ) {
         // Si le joueur essaye de placer une garniture au dessus d'un pain du haut
         if (!garnitures.includes(GarnitureType.PainHaut)) {
-          // On place la garniture
-          garnitures.push(type);
-          this.setState({
-            garnitures,
-          });
+          // Si le joueur essaye de placer plusieurs garnitures sur une question simple
+          console.log(nbVraiGarnitures);
+          if (gameStateData.questionType === QuestionType.Simple) {
+            if (nbVraiGarnitures < 1 || type === GarnitureType.PainHaut) {
+              // On place la garniture
+              garnitures.push(type);
+              this.setState({
+                garnitures,
+              });
+            } else {
+              notify(
+                "C'est une question simple, une seule réponse est démandé",
+                "error"
+              );
+            }
+          } else {
+            // On place la garniture
+            garnitures.push(type);
+            this.setState({
+              garnitures,
+            });
+          }
         } else {
           notify(
             "Vous ne pouvais pas placer de garniture au dessus du pain du haut",
@@ -79,6 +104,21 @@ export class BurgerGame extends React.Component<
 
   handleReset(): void {
     this.setState({ garnitures: [] });
+  }
+
+  handleSubmit(): void {
+    if (!this.state.garnitures.includes(GarnitureType.PainBas)) {
+      this.props.notify("Veuillez choisir au moins une réponse.", "error");
+      return;
+    }
+    if (!this.state.garnitures.includes(GarnitureType.PainHaut)) {
+      this.props.notify("Veuillez ajouter un pain du haut.", "error");
+      return;
+    }
+    this.props.handleAnswerQuestion(
+      this.props.gameStateData.questionIndex,
+      this.state.garnitures.flatMap((t) => (t >= 0 ? [t] : []))
+    );
   }
 
   renderGarniture(type: GarnitureType, key: React.Key): React.ReactNode {
@@ -163,7 +203,9 @@ export class BurgerGame extends React.Component<
             </div>
           ))}
         </div>
-        <button className="btn btn-done">Valider</button>
+        <button className="btn btn-done" onClick={this.handleSubmit}>
+          Valider {this.props.timer > 0 ? `(${this.props.timer}s)` : null}
+        </button>
       </div>
     );
   }

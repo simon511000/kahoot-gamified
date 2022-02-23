@@ -1,8 +1,8 @@
 import { BurgerGame } from "client/Games/BurgerGame/BurgerGame";
-import { TestGame } from "client/Games/TestGame/TestGame";
+import { OuvertGame } from "client/Games/OuvertGame/OuvertGame";
 import {
   GameStateQuestionCommence,
-  QuestionType,
+  GameType,
 } from "core/interfaces/GameInterfaces";
 import * as React from "react";
 import { TypeOptions } from "react-toastify";
@@ -24,22 +24,23 @@ export class QuestionCommenceApresPage extends React.Component<
   renderGame(): React.ReactNode {
     let game;
 
-    switch (this.props.gameStateData.question.type) {
-      case QuestionType.Burger:
+    switch (this.props.gameStateData.question.gameType) {
+      case GameType.Burger:
         game = (
           <BurgerGame
             gameStateData={this.props.gameStateData}
             handleAnswerQuestion={this.props.handleAnswerQuestion}
             notify={this.props.notify}
+            timer={this.props.timer}
           />
         );
         break;
-
-      default:
+      case GameType.Ouverte:
         game = (
-          <TestGame
+          <OuvertGame
             gameStateData={this.props.gameStateData}
             handleAnswerQuestion={this.props.handleAnswerQuestion}
+            notify={this.props.notify}
           />
         );
         break;
@@ -49,8 +50,6 @@ export class QuestionCommenceApresPage extends React.Component<
   }
 
   render(): React.ReactNode {
-    const { question, questionIndex } = this.props.gameStateData;
-
     return <div>{this.renderGame()}</div>;
   }
 }

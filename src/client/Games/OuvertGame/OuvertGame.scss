@@ -1,0 +1,25 @@
+.ouvertGame {
+  .personnages {
+    width: 100%;
+  }
+
+  textarea {
+    width: 100%;
+  }
+
+  .btn {
+    background: none;
+    background-color: #1d6ac2;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    outline: none;
+    padding: 4px 8px;
+  }
+
+  .btn-done {
+    background-color: green;
+    width: 100%;
+  }
+}

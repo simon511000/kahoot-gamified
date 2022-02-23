@@ -13,6 +13,7 @@ import {
   GameStateQuestionCommence,
   GameStateQuestionTermine,
   Player,
+  PlayerType,
   Question,
 } from "core/interfaces/GameInterfaces";
 import { RegisterPage } from "./pages/RegisterPage/RegisterPage";
@@ -21,9 +22,11 @@ import "react-toastify/dist/ReactToastify.css";
 import { AdminPage } from "./pages/AdminPage/AdminPage";
 import { PlayerPage } from "./pages/PlayerPage/PlayerPage";
 
+import { ViewerPage } from "./pages/ViewerPage/ViewerPage";
+
 import "./App.scss";
 
-const ENDPOINT = "ws://192.168.1.36:3001";
+const ENDPOINT = "ws://expose.simon511000.fr:3001";
 
 type AppProps = {};
 type AppState = {
@@ -37,6 +40,7 @@ type AppState = {
     | GameStateQuestionTermine
     | GameStateJeuTermine;
   timer: number;
+  viewerAnswers: { pseudo: string; answers: string[] }[];
 };
 export class App extends React.Component<AppProps, AppState> {
   private socket: Socket<ServerToClientEvents, ClientToServerEvents>;
@@ -55,6 +59,7 @@ export class App extends React.Component<AppProps, AppState> {
       gameState: GameState.JeuPasEncoreCommence,
       gameStateData: {} as GameStateJeuPasEncoreCommence,
       timer: -1,
+      viewerAnswers: [],
     };
 
     this.handleRegister = this.handleRegister.bind(this);
@@ -100,6 +105,9 @@ export class App extends React.Component<AppProps, AppState> {
           GameState.QuestionCommenceApres,
           gameStateData
         );
+        this.setState({
+          viewerAnswers: [],
+        });
         console.log(
           "GameState modifié en QuestionCommenceApres",
           gameStateData
@@ -118,6 +126,12 @@ export class App extends React.Component<AppProps, AppState> {
     this.socket.on("timer", (timer) => {
       this.setState({ timer });
       console.log(`Timer : ${timer}`);
+    });
+    this.socket.on("newAnswer", (pseudo, answers) => {
+      console.log("newAnswer");
+      this.setState({
+        viewerAnswers: [...this.state.viewerAnswers, { pseudo, answers }],
+      });
     });
   }
 
@@ -138,7 +152,7 @@ export class App extends React.Component<AppProps, AppState> {
   notify(message: string, type: TypeOptions = "default"): void {
     toast(message, {
       position: "top-right",
-      autoClose: 5000,
+      autoClose: 1500,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
@@ -277,30 +291,55 @@ export class App extends React.Component<AppProps, AppState> {
     });
   }
 
+  renderLoggedSection(playerType: PlayerType): React.ReactNode {
+    let section: React.ReactNode;
+
+    switch (playerType) {
+      case PlayerType.Player:
+        section = (
+          <PlayerPage
+            gameState={this.state.gameState}
+            gameStateData={this.state.gameStateData}
+            timer={this.state.timer}
+            handleAnswerQuestion={this.handlePlayerAnswerQuestion}
+            notify={this.notify}
+          />
+        );
+        break;
+      case PlayerType.Admin:
+        section = (
+          <AdminPage
+            gameState={this.state.gameState}
+            gameStateData={this.state.gameStateData}
+            timer={this.state.timer}
+            getQuestions={this.adminGetQuestions}
+            handleStartQuestion={this.handleAdminStartQuestion}
+            handleStopQuestion={this.handleAdminStopQuestion}
+            handleFinishGame={this.handleAdminFinishGame}
+            handleResetGame={this.handleAdminResetGame}
+          />
+        );
+        break;
+      case PlayerType.Viewer:
+        section = (
+          <ViewerPage
+            gameState={this.state.gameState}
+            gameStateData={this.state.gameStateData}
+            timer={this.state.timer}
+            answers={this.state.viewerAnswers}
+          />
+        );
+        break;
+    }
+
+    return section;
+  }
+
   render(): React.ReactNode {
     return (
       <>
         {this.state.isLogged ? (
-          this.state.player!.isAdmin ? (
-            <AdminPage
-              gameState={this.state.gameState}
-              gameStateData={this.state.gameStateData}
-              timer={this.state.timer}
-              getQuestions={this.adminGetQuestions}
-              handleStartQuestion={this.handleAdminStartQuestion}
-              handleStopQuestion={this.handleAdminStopQuestion}
-              handleFinishGame={this.handleAdminFinishGame}
-              handleResetGame={this.handleAdminResetGame}
-            />
-          ) : (
-            <PlayerPage
-              gameState={this.state.gameState}
-              gameStateData={this.state.gameStateData}
-              timer={this.state.timer}
-              handleAnswerQuestion={this.handlePlayerAnswerQuestion}
-              notify={this.notify}
-            />
-          )
+          this.renderLoggedSection(this.state.player!.type)
         ) : (
           <RegisterPage handleRegister={this.handleRegister} />
         )}

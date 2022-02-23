@@ -1,13 +1,19 @@
+export enum PlayerType {
+  Player,
+  Admin,
+  Viewer,
+}
+
 export interface Player {
   playerId: string; // socket.id
   token: string; // token stocké dans les cookies du joueur permettant de le reco en cas de deconnection
-  isAdmin: boolean;
+  type: PlayerType;
   pseudo: string;
   points: number; // bonne réponse = +1 point
   questionsRepondues: number[];
 }
 
-export enum QuestionType {
+export enum GameType {
   Burger, // QCM multiple
   GarsQuiBouffe, // QCM simple
   Tables, // QCM simple
@@ -15,8 +21,14 @@ export enum QuestionType {
   Test, // Juste à fin de test //TODO: à supprimer
 }
 
+export enum QuestionType {
+  Simple,
+  Multiple
+}
+
 export interface Question {
-  type: QuestionType;
+  gameType: GameType;
+  questionType: QuestionType,
   question: string;
   reponsesPossibles: string[]; // null si question ouverte
   bonnesReponses: number[];
@@ -35,6 +47,7 @@ export interface GameStateJeuPasEncoreCommence {}
 export interface GameStateQuestionCommence {
   questionIndex: number;
   question: Question; // L'objet Question dépourvu des bonnes réponses
+  questionType: QuestionType;
 }
 export interface GameStateQuestionTermine {
   questionIndex: number;
@@ -52,4 +65,5 @@ export interface Game {
   joueurs: Player[];
   questions: Question[];
   timerInterval?: NodeJS.Timer;
+  viewers: string[];
 }

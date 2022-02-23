@@ -10,6 +10,7 @@ import {
   GameStateQuestionCommence,
   GameStateJeuTermine,
   GameStateQuestionTermine,
+  PlayerType,
 } from "../core/interfaces/GameInterfaces";
 
 export class GameManager {
@@ -29,6 +30,9 @@ export class GameManager {
       return false;
     } else {
       this.game.joueurs.push(newPlayer);
+      if (newPlayer.type === PlayerType.Viewer) {
+        this.game.viewers.push(newPlayer.playerId);
+      }
       return true;
     }
   }
@@ -86,11 +90,26 @@ export class GameManager {
     }
   }
 
-  isAdmin(pseudo: string): boolean {
-    return (
-      crypto.createHash("sha256").update(pseudo).digest("hex") ==
-      "51c919892ec797bc4f321917e5c0aa28587aad9692814b3295ba690d150b2fd6"
-    );
+  getPlayerType(pseudo: string): PlayerType {
+    let playerType: PlayerType;
+    const pseudoHashed = crypto
+      .createHash("sha256")
+      .update(pseudo)
+      .digest("hex");
+
+    switch (pseudoHashed) {
+      case "d1a59cef8a6b1664139227304c615b179e8bb2b3d98cd24a5661a1db0849e9a7":
+        playerType = PlayerType.Admin;
+        break;
+      case "6978a7936cea592675c0f0a2cf6e5e429851d5f158c62f21e6784c02634787b4":
+        playerType = PlayerType.Viewer;
+        break;
+      default:
+        playerType = PlayerType.Player;
+        break;
+    }
+
+    return playerType;
   }
 
   getQuestions(): Question[] {

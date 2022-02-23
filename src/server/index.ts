@@ -6,6 +6,7 @@ import {
   GameStateQuestionCommence,
   GameStateQuestionTermine,
   Player,
+  PlayerType,
 } from "../core/interfaces/GameInterfaces";
 import {
   ClientToServerEvents,
@@ -24,7 +25,7 @@ const io = new Server<
   SocketData
 >({
   cors: {
-    origin: "http://localhost:3000",
+    origin: "http://expose.simon511000.fr:3000",
     credentials: true,
   },
 });
@@ -40,7 +41,7 @@ io.on("connection", (socket) => {
     const player: Player = {
       playerId: socket.id,
       token: newToken,
-      isAdmin: game.isAdmin(pseudo),
+      type: game.getPlayerType(pseudo),
       pseudo,
       points: 0,
       questionsRepondues: [],
@@ -61,7 +62,7 @@ io.on("connection", (socket) => {
   socket.on("adminGetQuestions", (callback) => {
     const player = game.getPlayer(socket.id);
     if (player !== undefined) {
-      if (player.isAdmin) {
+      if (player.type == PlayerType.Admin) {
         callback(false, game.getQuestions());
       } else {
         return callback(
@@ -76,7 +77,7 @@ io.on("connection", (socket) => {
   socket.on("adminStartQuestion", (questionIndex, callback) => {
     const player = game.getPlayer(socket.id);
     if (player !== undefined) {
-      if (player.isAdmin) {
+      if (player.type == PlayerType.Admin) {
         // Si une question est déjà en cours, on ne peux pas en démarrer une nouvelle
         if (game.getCurrentIndexQuestion() === -1) {
           const question = game.getQuestions()[questionIndex];
@@ -86,6 +87,7 @@ io.on("connection", (socket) => {
               ...question,
               bonnesReponses: [],
             },
+            questionType: question.questionType,
           };
           game.setGameState(GameState.QuestionCommenceAvant, gameStateData);
           // On envoie la question sans divulger les bonnes réponses
@@ -158,7 +160,7 @@ io.on("connection", (socket) => {
   socket.on("adminStopQuestion", (questionIndex, callback) => {
     const player = game.getPlayer(socket.id);
     if (player !== undefined) {
-      if (player.isAdmin) {
+      if (player.type == PlayerType.Admin) {
         // Si la question n'est pas déjà en cours, il est inutile de la stopper
         if (game.getCurrentIndexQuestion() === questionIndex) {
           const gameStateData: GameStateQuestionTermine = {
@@ -185,7 +187,7 @@ io.on("connection", (socket) => {
   socket.on("adminFinishGame", (callback) => {
     const player = game.getPlayer(socket.id);
     if (player !== undefined) {
-      if (player.isAdmin) {
+      if (player.type == PlayerType.Admin) {
         // Si une question est en cours, on ne peux pas stopper la partie
         if (game.getCurrentIndexQuestion() === -1) {
           const gameState: GameStateJeuTermine = {};
@@ -207,7 +209,7 @@ io.on("connection", (socket) => {
   socket.on("adminResetGame", (callback) => {
     const player = game.getPlayer(socket.id);
     if (player !== undefined) {
-      if (player.isAdmin) {
+      if (player.type == PlayerType.Admin) {
         const gameState: GameStateJeuPasEncoreCommence = {};
         const timer = game.getTimer();
         if (timer !== undefined) {
@@ -236,16 +238,26 @@ io.on("connection", (socket) => {
       if (game.getCurrentIndexQuestion() === questionIndex) {
         // On vérifie que le joueur n'a pas déjà répondu à la question
         if (!game.hasAlreadyAnswered(socket.id, questionIndex)) {
-          // Si la question a des réponses possibles, on lui ajoute 1 point
-          if (
-            game.getBonnesReponses(questionIndex).length > 0 &&
-            Array.isArray(answers) &&
-            game.isAnswersCorrect(questionIndex, answers)
-          ) {
-            game.addAnswered(socket.id, questionIndex);
-            game.addPoint(socket.id);
-            console.log("points : ", game.getPlayer(socket.id)!.points);
-          }
+          game.addAnswered(socket.id, questionIndex);
+          game.game.viewers.forEach((viewer) => {
+            if (Array.isArray(answers)) {
+              io.to(viewer).emit(
+                "newAnswer",
+                game.getPlayer(socket.id)!.pseudo,
+                game
+                  .getQuestions()
+                  [questionIndex].reponsesPossibles.flatMap((reponse, i) =>
+                    answers.includes(i) ? [reponse] : []
+                  )
+              );
+            } else {
+              io.to(viewer).emit(
+                "newAnswer",
+                game.getPlayer(socket.id)!.pseudo,
+                [answers]
+              );
+            }
+          });
           callback(false);
         } else {
           callback("Vous avez déjà répondu à cette question");

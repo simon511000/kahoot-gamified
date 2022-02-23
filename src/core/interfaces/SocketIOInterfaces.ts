@@ -9,6 +9,7 @@ import {
 } from "./GameInterfaces";
 
 export interface ServerToClientEvents {
+  // PLAYER/ADMIN/VIEWER
   gameStateChangeToJeuPasEncoreCommence: (
     gameStateData: GameStateJeuPasEncoreCommence
   ) => void;
@@ -23,6 +24,9 @@ export interface ServerToClientEvents {
   ) => void;
   gameStateChangeToJeuTermine: (gameStateData: GameStateJeuTermine) => void;
   timer: (timer: number) => void;
+
+  // VIEWER
+  newAnswer: (pseudo: string, answers: string[]) => void;
 }
 
 export interface ClientToServerEvents {

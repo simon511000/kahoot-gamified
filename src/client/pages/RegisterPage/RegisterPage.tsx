@@ -2,6 +2,7 @@ import { Title } from "client/components/Title/Title";
 import { useState } from "react";
 
 import "./RegisterPage.scss";
+const barre = require("./assets/barre.png");
 
 type RegisterPageProps = {
   handleRegister: (pseudo: string) => Promise<boolean>;
@@ -20,7 +21,7 @@ export function RegisterPage({ handleRegister }: RegisterPageProps) {
         <h1 className="registerPage__center__title">
           En restauration scolaire
         </h1>
-        <div className="registerPage__center__barre"></div>
+        <img src={barre} alt="barre" className="barre" />
         <h3 className="subtitle">Séance 3</h3>
         <form
           className="registerPage__center__pseudo"
